@@ -16,7 +16,7 @@ The next iteration added the dashboard, Study Center, Pomodoro timer, revision n
 
 The product pass replaced the dark prototype styling with a calmer light interface, refined navigation, tables, cards, and page headers, and improved the Study Center scrolling layout. The dashboard now foregrounds the day’s classes and upcoming tasks. The project also gained a CampusMate app icon and a macOS build. The app creates its database tables on first launch. Packaged builds store each user's database in macOS Application Support, while source runs continue to use the project folder.
 
-The phone-friendly web preview brings the dashboard, schedule, tasks, attendance, study subjects, revision notes, and focus timer to a browser. It is a static site and saves each tester's information in that browser's local storage. It does not provide accounts, cloud sync, or the local Ollama connection used by the desktop AI Tutor.
+The phone-friendly installable web app brings the dashboard, schedule, tasks, attendance, study subjects, revision notes, and focus timer to a browser. It can be added to an iPhone or Android home screen and saves each tester's information in that browser's local storage. It does not provide accounts, cloud sync, or the local Ollama connection used by the desktop AI Tutor.
 
 ## Features
 

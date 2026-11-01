@@ -21,6 +21,7 @@
   let toastTimeout;
   let timerSeconds = 25 * 60;
   let timerInterval = null;
+  let installPromptEvent = null;
 
   function freshState() {
     return { classes: [], tasks: [], attendance: [], subjects: [], notes: [] };
@@ -232,6 +233,7 @@
     return `<section class="hero"><div class="hero-copy"><p class="hero-eyebrow">YOUR DAY, IN SYNC</p><h1>Make today count.</h1>
       <p class="hero-subtitle">Classes, coursework and focus time — all in one place.</p></div>
       <div class="hero-side"><span class="hero-date">${escapeHtml(todayLabel())}</span><button class="button" type="button" data-page="tutor">Ask your AI tutor →</button></div></section>
+      <section class="install-card"><span class="install-icon" aria-hidden="true">↗</span><div class="install-copy"><strong>Keep CampusMate on your home screen</strong><span>Open it like an app whenever you need it.</span></div><button class="button button-small" type="button" data-action="install-app">How to add</button></section>
       <section class="stats-grid" aria-label="Your overview">
         <article class="stat-card"><p class="stat-label">Classes today</p><div class="stat-value">${classesToday.length}</div><div class="stat-accent"></div></article>
         <article class="stat-card mint"><p class="stat-label">Open tasks</p><div class="stat-value">${openTasks.length}</div><div class="stat-accent"></div></article>
@@ -355,6 +357,7 @@
     if (action === "add-attendance") return openForm("attendance");
     if (action === "add-subject") return openForm("subject");
     if (action === "add-note") return openForm("note");
+    if (action === "install-app") return installApp();
 
     if (action === "toggle-task") {
       const task = state.tasks.find((item) => item.id === id);
@@ -453,6 +456,23 @@
     if (button) button.textContent = timerInterval ? "Pause" : "Start focus";
   }
 
+  async function installApp() {
+    if (installPromptEvent) {
+      const promptEvent = installPromptEvent;
+      installPromptEvent = null;
+      await promptEvent.prompt();
+      const choice = await promptEvent.userChoice;
+      showToast(choice.outcome === "accepted"
+        ? "CampusMate added to your phone."
+        : "You can add CampusMate later from your browser menu.");
+      return;
+    }
+    dialogContent.innerHTML = `<div class="dialog-inner"><header class="dialog-header"><div><h2 class="dialog-title">Add CampusMate to your phone</h2><p class="dialog-subtitle">It will open in its own window from your home screen.</p></div><button class="button button-quiet button-icon" type="button" data-close-dialog aria-label="Close">×</button></header>
+      <div class="install-steps"><section><h3>iPhone</h3><p>Open this page in Safari, tap <strong>Share</strong>, choose <strong>Add to Home Screen</strong>, then tap <strong>Add</strong>.</p></section>
+      <section><h3>Android</h3><p>Open this page in Chrome, tap the <strong>⋮</strong> menu, then choose <strong>Install app</strong> or <strong>Add to Home screen</strong>.</p></section></div></div>`;
+    dialog.showModal();
+  }
+
   function showDialog(title, subtitle, body, onSubmit) {
     dialogContent.innerHTML = `<form class="dialog-inner" id="entry-form"><header class="dialog-header"><div><h2 class="dialog-title">${escapeHtml(title)}</h2>${subtitle ? `<p class="dialog-subtitle">${escapeHtml(subtitle)}</p>` : ""}</div>
       <button class="button button-quiet button-icon" type="button" data-close-dialog aria-label="Close dialog">×</button></header>
@@ -467,7 +487,6 @@
       }
     });
     dialog.showModal();
-    form.querySelector("input, select, textarea")?.focus();
   }
 
   function field(name, label, type = "text", value = "", options = {}) {
@@ -569,6 +588,11 @@
   if ("serviceWorker" in navigator && location.protocol === "https:") {
     window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
   }
+
+  window.addEventListener("beforeinstallprompt", (event) => {
+    event.preventDefault();
+    installPromptEvent = event;
+  });
 
   render();
 })();
