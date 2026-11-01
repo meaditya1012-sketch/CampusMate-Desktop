@@ -1,0 +1,16 @@
+
+.venv/
+.venvcampusmate/
+__pycache__/
+*.py[cod]
+.DS_Store
+build/
+dist/
+*.db
+*.sqlite
+*.sqlite3
+*.backup
+*.zip
+backups/
+release/
+.env
