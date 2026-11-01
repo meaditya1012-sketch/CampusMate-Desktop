@@ -1,282 +1,262 @@
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QTime
 from PySide6.QtWidgets import (
-    QWidget,
-    QVBoxLayout,
+    QComboBox,
+    QDialog,
+    QDialogButtonBox,
+    QFormLayout,
+    QFrame,
     QHBoxLayout,
     QLabel,
-    QPushButton,
-    QTableWidget,
-    QTableWidgetItem,
-    QHeaderView,
-    QDialog,
-    QFormLayout,
-    QLineEdit,
-    QDialogButtonBox,
     QMessageBox,
+    QPushButton,
+    QScrollArea,
+    QTimeEdit,
+    QVBoxLayout,
+    QWidget,
 )
+
 from database.database import get_connection
-from screens.components import create_empty_state, fit_table_height
+from screens.components import create_empty_state
+
+
+DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
 
 class AddClassDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
-
-        self.setWindowTitle("Add Class")
-        self.setMinimumWidth(350)
+        self.setWindowTitle("Add a class")
+        self.setMinimumWidth(380)
 
         layout = QFormLayout(self)
+        layout.setContentsMargins(22, 20, 22, 18)
+        layout.setSpacing(12)
+
+        from PySide6.QtWidgets import QLineEdit
 
         self.subject = QLineEdit()
         self.teacher = QLineEdit()
-        self.day = QLineEdit()
-        self.start_time = QLineEdit()
-        self.end_time = QLineEdit()
         self.room = QLineEdit()
+        self.day = QComboBox()
+        self.day.addItems(DAYS)
+        self.start_time = QTimeEdit(QTime(9, 0))
+        self.end_time = QTimeEdit(QTime(10, 0))
+        self.start_time.setDisplayFormat("h:mm AP")
+        self.end_time.setDisplayFormat("h:mm AP")
 
-        self.subject.setPlaceholderText("e.g. Mathematics")
-        self.teacher.setPlaceholderText("e.g. Dr. Sharma")
-        self.day.setPlaceholderText("e.g. Monday")
-        self.start_time.setPlaceholderText("e.g. 09:00 AM")
-        self.end_time.setPlaceholderText("e.g. 10:00 AM")
-        self.room.setPlaceholderText("e.g. Room 101")
+        self.subject.setPlaceholderText("e.g. Data Structures")
+        self.teacher.setPlaceholderText("e.g. Prof. Shah")
+        self.room.setPlaceholderText("e.g. B-204")
+        self.day.setCurrentText("Monday")
 
-        layout.addRow("Subject:", self.subject)
-        layout.addRow("Teacher:", self.teacher)
-        layout.addRow("Day:", self.day)
-        layout.addRow("Start Time:", self.start_time)
-        layout.addRow("End Time:", self.end_time)
-        layout.addRow("Room:", self.room)
+        layout.addRow("Subject", self.subject)
+        layout.addRow("Teacher", self.teacher)
+        layout.addRow("Day", self.day)
+        layout.addRow("Starts", self.start_time)
+        layout.addRow("Ends", self.end_time)
+        layout.addRow("Room", self.room)
 
         buttons = QDialogButtonBox(
-            QDialogButtonBox.Ok | QDialogButtonBox.Cancel
+            QDialogButtonBox.StandardButton.Save
+            | QDialogButtonBox.StandardButton.Cancel
         )
-
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
-
         layout.addRow(buttons)
 
 
 class ScheduleScreen(QWidget):
-
     def __init__(self):
         super().__init__()
         self.setObjectName("scheduleScreen")
 
         layout = QVBoxLayout(self)
-
         layout.setContentsMargins(34, 28, 34, 26)
         layout.setSpacing(16)
 
-        header_row = QHBoxLayout()
-        header_row.setSpacing(12)
-
-        heading_layout = QVBoxLayout()
-        heading_layout.setSpacing(4)
+        header = QHBoxLayout()
+        heading = QVBoxLayout()
+        heading.setSpacing(4)
 
         title = QLabel("Schedule")
         title.setObjectName("pageTitle")
-
-        subtitle = QLabel("Your weekly class timetable")
+        subtitle = QLabel("Keep your week in view.")
         subtitle.setObjectName("pageSubtitle")
-
-        heading_layout.addWidget(title)
-        heading_layout.addWidget(subtitle)
-        header_row.addLayout(heading_layout, 1)
+        heading.addWidget(title)
+        heading.addWidget(subtitle)
+        header.addLayout(heading, 1)
 
         add_button = QPushButton("+  Add class")
         add_button.setObjectName("primaryButton")
         add_button.setCursor(Qt.CursorShape.PointingHandCursor)
         add_button.clicked.connect(self.open_add_class)
-        header_row.addWidget(
-            add_button,
-            0,
-            Qt.AlignmentFlag.AlignBottom,
-        )
-        layout.addLayout(header_row)
+        header.addWidget(add_button, 0, Qt.AlignmentFlag.AlignBottom)
+        layout.addLayout(header)
 
-        self.empty_state = create_empty_state(
-            "No classes on your schedule yet",
-            "Add your first class to build a timetable for the week.",
-        )
-        layout.addWidget(self.empty_state)
+        self.scroll = QScrollArea()
+        self.scroll.setWidgetResizable(True)
+        self.scroll.setFrameShape(QFrame.Shape.NoFrame)
+        self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
-        # Schedule table
-        self.table = QTableWidget()
+        self.list_content = QWidget()
+        self.list_layout = QVBoxLayout(self.list_content)
+        self.list_layout.setContentsMargins(0, 0, 4, 0)
+        self.list_layout.setSpacing(9)
+        self.scroll.setWidget(self.list_content)
+        layout.addWidget(self.scroll, 1)
 
-        self.table.setColumnCount(5)
-        self.table.setObjectName("dataTable")
-        self.table.setAlternatingRowColors(True)
-        self.table.verticalHeader().setVisible(False)
-        self.table.verticalHeader().setDefaultSectionSize(46)
-        self.table.setShowGrid(False)
-        self.table.setEditTriggers(
-            QTableWidget.EditTrigger.NoEditTriggers
-        )
-        self.table.setSelectionBehavior(
-            QTableWidget.SelectionBehavior.SelectRows
-        )
-        self.table.setSelectionMode(
-            QTableWidget.SelectionMode.SingleSelection
-        )
-
-        self.table.setHorizontalHeaderLabels([
-            "Day",
-            "Subject",
-            "Teacher",
-            "Time",
-            "Room"
-        ])
-
-        header = self.table.horizontalHeader()
-        header.setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
-        header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
-        header.setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
-
-        layout.addWidget(self.table)
-        layout.addStretch()
-
-        # Load saved classes
         self.load_classes()
 
-    # --------------------------------
-    # Load classes from database
-    # --------------------------------
+    @staticmethod
+    def format_time(value):
+        value = str(value or "")
+        for pattern in ("HH:mm", "h:mm AP", "h:mm A"):
+            parsed = QTime.fromString(value, pattern)
+            if parsed.isValid():
+                return parsed.toString("h:mm AP")
+        return value
+
+    @staticmethod
+    def time_sort_key(value):
+        for pattern in ("HH:mm", "h:mm AP", "h:mm A"):
+            parsed = QTime.fromString(str(value or ""), pattern)
+            if parsed.isValid():
+                return parsed.hour() * 60 + parsed.minute()
+        return 24 * 60
+
+    def clear_list(self):
+        while self.list_layout.count():
+            item = self.list_layout.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                widget.deleteLater()
+
+    def make_class_card(self, record):
+        class_id, day, subject, teacher, start, end, room = record
+        card = QFrame()
+        card.setObjectName("scheduleItem")
+
+        row = QHBoxLayout(card)
+        row.setContentsMargins(15, 12, 13, 12)
+        row.setSpacing(15)
+
+        time = QLabel(
+            f"{self.format_time(start)} – {self.format_time(end)}\n{day}"
+        )
+        time.setObjectName("scheduleTime")
+        time.setMinimumWidth(112)
+        row.addWidget(time)
+
+        details = QVBoxLayout()
+        details.setSpacing(3)
+        name = QLabel(subject)
+        name.setObjectName("listMain")
+        name.setWordWrap(True)
+        metadata = " · ".join(
+            value for value in (teacher, f"Room {room}" if room else "") if value
+        ) or "Class"
+        meta = QLabel(metadata)
+        meta.setObjectName("listMeta")
+        meta.setWordWrap(True)
+        details.addWidget(name)
+        details.addWidget(meta)
+        row.addLayout(details, 1)
+
+        remove = QPushButton("×")
+        remove.setObjectName("iconButton")
+        remove.setToolTip("Remove class")
+        remove.setAccessibleName(f"Remove {subject}")
+        remove.clicked.connect(lambda: self.delete_class(class_id, subject))
+        row.addWidget(remove, 0, Qt.AlignmentFlag.AlignVCenter)
+        return card
 
     def load_classes(self):
-
         connection = get_connection()
+        try:
+            cursor = connection.cursor()
+            cursor.execute(
+                """
+                SELECT id, day, subject, teacher, start_time, end_time, room
+                FROM classes
+                """
+            )
+            records = cursor.fetchall()
+        finally:
+            connection.close()
 
-        cursor = connection.cursor()
+        day_order = {day.lower(): index for index, day in enumerate(DAYS)}
+        records.sort(
+            key=lambda row: (
+                day_order.get(str(row[1]).lower(), len(DAYS)),
+                self.time_sort_key(row[4]),
+            )
+        )
 
-        cursor.execute("""
-            SELECT day, subject, teacher,
-                   start_time, end_time, room
-            FROM classes
-            ORDER BY id
-        """)
-
-        classes = cursor.fetchall()
-
-        connection.close()
-
-        self.table.setRowCount(0)
-
-        for class_data in classes:
-
-            day = class_data[0]
-            subject = class_data[1]
-            teacher = class_data[2]
-            start_time = class_data[3]
-            end_time = class_data[4]
-            room = class_data[5]
-
-            row = self.table.rowCount()
-
-            self.table.insertRow(row)
-
-            values = [
-                day,
-                subject,
-                teacher,
-                f"{start_time} - {end_time}",
-                room
-            ]
-
-            for column, value in enumerate(values):
-
-                self.table.setItem(
-                    row,
-                    column,
-                    QTableWidgetItem(value)
+        self.clear_list()
+        if not records:
+            self.list_layout.addWidget(
+                create_empty_state(
+                    "Your week is open",
+                    "Add your first class to start building a timetable.",
                 )
+            )
+        else:
+            for record in records:
+                self.list_layout.addWidget(self.make_class_card(record))
+        self.list_layout.addStretch()
 
-        has_classes = bool(classes)
-        self.empty_state.setVisible(not has_classes)
-        self.table.setVisible(has_classes)
-        if has_classes:
-            fit_table_height(self.table, len(classes))
-
-    # --------------------------------
-    # Save class to database
-    # --------------------------------
-
-    def save_class_to_database(
-        self,
-        subject,
-        teacher,
-        day,
-        start_time,
-        end_time,
-        room
-    ):
+    def delete_class(self, class_id, subject):
+        answer = QMessageBox.question(
+            self,
+            "Remove class",
+            f"Remove {subject} from your schedule?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        )
+        if answer != QMessageBox.StandardButton.Yes:
+            return
 
         connection = get_connection()
-
-        cursor = connection.cursor()
-
-        cursor.execute("""
-            INSERT INTO classes
-            (subject, teacher, day, start_time, end_time, room)
-            VALUES (?, ?, ?, ?, ?, ?)
-        """, (
-            subject,
-            teacher,
-            day,
-            start_time,
-            end_time,
-            room
-        ))
-
-        connection.commit()
-
-        connection.close()
-
-    # --------------------------------
-    # Add class
-    # --------------------------------
+        try:
+            connection.execute("DELETE FROM classes WHERE id = ?", (class_id,))
+            connection.commit()
+        finally:
+            connection.close()
+        self.load_classes()
 
     def open_add_class(self):
-
         dialog = AddClassDialog(self)
+        if not dialog.exec():
+            return
 
-        if dialog.exec():
+        subject = dialog.subject.text().strip()
+        if not subject:
+            QMessageBox.warning(self, "Missing subject", "Enter a subject for this class.")
+            return
 
-            subject = dialog.subject.text().strip()
-            teacher = dialog.teacher.text().strip()
-            day = dialog.day.text().strip()
-            start_time = dialog.start_time.text().strip()
-            end_time = dialog.end_time.text().strip()
-            room = dialog.room.text().strip()
+        start = dialog.start_time.time()
+        end = dialog.end_time.time()
+        if end <= start:
+            QMessageBox.warning(self, "Invalid time", "End time must be later than start time.")
+            return
 
-            # Validation
-            if not all([
-                subject,
-                teacher,
-                day,
-                start_time,
-                end_time,
-                room
-            ]):
-
-                QMessageBox.warning(
-                    self,
-                    "Missing Information",
-                    "Please fill in all fields."
-                )
-
-                return
-
-            # Save to database
-            self.save_class_to_database(
-                subject,
-                teacher,
-                day,
-                start_time,
-                end_time,
-                room
+        connection = get_connection()
+        try:
+            connection.execute(
+                """
+                INSERT INTO classes (subject, teacher, day, start_time, end_time, room)
+                VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    subject,
+                    dialog.teacher.text().strip(),
+                    dialog.day.currentText(),
+                    start.toString("HH:mm"),
+                    end.toString("HH:mm"),
+                    dialog.room.text().strip(),
+                ),
             )
-
-            # Reload table
-            self.load_classes()
+            connection.commit()
+        finally:
+            connection.close()
+        self.load_classes()

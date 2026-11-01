@@ -30,9 +30,19 @@ QFrame#sidebar {
 
 QLabel#logo {
     color: #FFFFFF;
-    font-size: 22px;
+    font-size: 19px;
     font-weight: 800;
     letter-spacing: -0.5px;
+}
+
+QLabel#logoMark {
+    color: #FFFFFF;
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+        stop:0 #5368BD, stop:1 #334A78);
+    border: 1px solid rgba(255, 255, 255, 28);
+    border-radius: 11px;
+    font-size: 17px;
+    font-weight: 800;
 }
 
 QLabel#sidebarSubtitle {
@@ -270,6 +280,219 @@ QLabel#rowDot[variant="mint"] {
 
 QLabel#rowDot[variant="amber"] {
     color: #E0A94F;
+}
+
+QFrame#scheduleItem,
+QFrame#taskItem,
+QFrame#attendanceItem,
+QFrame#subjectItem,
+QFrame#noteItem {
+    background-color: #FFFFFF;
+    border: 1px solid #E5E9F0;
+    border-radius: 13px;
+}
+
+QLabel#scheduleTime {
+    color: #5262C4;
+    font-size: 10px;
+    font-weight: 750;
+    line-height: 1.5;
+}
+
+QPushButton#iconButton {
+    min-width: 31px;
+    max-width: 31px;
+    min-height: 31px;
+    max-height: 31px;
+    padding: 0;
+    color: #8591A5;
+    background-color: transparent;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    font-size: 18px;
+    font-weight: 400;
+}
+
+QPushButton#iconButton:hover {
+    color: #C45D64;
+    background-color: #FFF0F1;
+    border-color: #F4DADD;
+}
+
+QPushButton#taskToggle {
+    min-width: 23px;
+    max-width: 23px;
+    min-height: 23px;
+    max-height: 23px;
+    padding: 0;
+    color: #FFFFFF;
+    background-color: #FFFFFF;
+    border: 1.5px solid #C7CFDD;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+QPushButton#taskToggle:hover {
+    border-color: #5968D9;
+}
+
+QPushButton#taskToggle[complete="true"] {
+    background-color: #51B795;
+    border-color: #51B795;
+}
+
+QLabel#listMain[completed="true"] {
+    color: #8A95A7;
+}
+
+QLabel#priorityBadge {
+    padding: 5px 8px;
+    color: #627087;
+    background-color: #F1F3F7;
+    border: none;
+    border-radius: 10px;
+    font-size: 9px;
+    font-weight: 750;
+}
+
+QLabel#priorityBadge[priority="high"] {
+    color: #BD5D67;
+    background-color: #FFF0F1;
+}
+
+QLabel#priorityBadge[priority="medium"] {
+    color: #A57529;
+    background-color: #FFF5E6;
+}
+
+QLabel#priorityBadge[priority="low"] {
+    color: #42896F;
+    background-color: #EAF7F1;
+}
+
+QPushButton#filterButton {
+    min-height: 31px;
+    padding: 0 11px;
+    color: #727F95;
+    background-color: #FFFFFF;
+    border: 1px solid #E1E6EF;
+    border-radius: 15px;
+    font-size: 10px;
+    font-weight: 680;
+}
+
+QPushButton#filterButton[selected="true"] {
+    color: #4F5FC1;
+    background-color: #EEF0FF;
+    border-color: #D8DDFA;
+}
+
+QPushButton#filterButton:hover {
+    border-color: #BEC7D8;
+}
+
+QPushButton#smallButton {
+    min-height: 31px;
+    padding: 0 10px;
+    color: #58667D;
+    background-color: #FFFFFF;
+    border: 1px solid #E1E6EF;
+    border-radius: 9px;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+QPushButton#smallButton:hover {
+    color: #4F5FC1;
+    background-color: #F0F2FF;
+    border-color: #D1D8F6;
+}
+
+QLabel#attendancePercent {
+    color: #29354C;
+    font-size: 17px;
+    font-weight: 800;
+}
+
+QLabel#attendanceStatus {
+    padding: 5px 8px;
+    color: #438B70;
+    background-color: #EAF7F1;
+    border: none;
+    border-radius: 10px;
+    font-size: 9px;
+    font-weight: 700;
+}
+
+QLabel#attendanceStatus[status="watch"] {
+    color: #A57529;
+    background-color: #FFF5E6;
+}
+
+QLabel#attendanceStatus[status="risk"] {
+    color: #BD5D67;
+    background-color: #FFF0F1;
+}
+
+QProgressBar#attendanceProgress,
+QProgressBar#studyProgress {
+    background-color: #EDF0F5;
+    border: none;
+    border-radius: 4px;
+}
+
+QProgressBar#attendanceProgress::chunk,
+QProgressBar#studyProgress::chunk {
+    background-color: #55B996;
+    border-radius: 4px;
+}
+
+QProgressBar#attendanceProgress[status="watch"]::chunk {
+    background-color: #D99B43;
+}
+
+QProgressBar#attendanceProgress[status="risk"]::chunk {
+    background-color: #CB6570;
+}
+
+QLabel#subjectGoal {
+    color: #7C889E;
+    font-size: 9px;
+    font-weight: 650;
+}
+
+QLabel#studyPercent {
+    color: #4C5BB9;
+    font-size: 9px;
+    font-weight: 750;
+}
+
+QLabel#noteIcon {
+    color: #5968C9;
+    background-color: #EEF0FF;
+    border: 1px solid #E3E6FF;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+QPushButton#noteLink {
+    padding: 0;
+    color: #29354C;
+    background-color: transparent;
+    border: none;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 750;
+}
+
+QPushButton#noteLink:hover {
+    color: #4F5FC1;
+}
+
+QLabel#notePreview {
+    color: #7E8BA0;
+    font-size: 10px;
 }
 
 QFrame#emptyState {

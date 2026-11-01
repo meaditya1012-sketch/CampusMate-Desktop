@@ -1,12 +1,12 @@
 # CampusMate
 
-CampusMate is a desktop organizer for students, with a dashboard, class schedule, task list, attendance tracker, study notes, a Pomodoro timer, and an optional AI Tutor.
+CampusMate is a student planner for Mac and phones, with a dashboard, class schedule, task list, attendance tracker, study notes, and a Pomodoro timer. The Mac app also includes an optional local AI Tutor.
 
 ![CampusMate dashboard preview](assets/campusmate-dashboard-preview.png)
 
 ## Try the phone-friendly web preview
 
-Open the [CampusMate phone app](https://meaditya1012-sketch.github.io/CampusMate-Desktop/) in Safari or Chrome. On iPhone, use **Share → Add to Home Screen**; on Android, open Chrome's menu and choose **Install app** or **Add to Home screen**. It then opens from a home-screen icon. The app stores data in that browser on that device; it does not sync with the Mac app or between devices. The AI Tutor remains available in the desktop app when Ollama is running locally.
+Open the [CampusMate phone app](https://meaditya1012-sketch.github.io/CampusMate-Desktop/) in Safari or Chrome. On iPhone, use **Share → Add to Home Screen**; on Android, open Chrome's menu and choose **Install app** or **Add to Home screen**. It then opens from a home-screen icon. The Mac app and phone app use separate local data; records do not sync between them. The optional AI Tutor is currently available in the Mac app when Ollama is running locally.
 
 ## Download
 

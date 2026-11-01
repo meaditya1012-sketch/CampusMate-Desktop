@@ -58,12 +58,24 @@ class CampusMate(QMainWindow):
         sidebar_layout.setContentsMargins(19, 28, 19, 22)
         sidebar_layout.setSpacing(9)
 
+        brand_row = QHBoxLayout()
+        brand_row.setSpacing(10)
+
+        logo_mark = QLabel("C")
+        logo_mark.setObjectName("logoMark")
+        logo_mark.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        logo_mark.setFixedSize(34, 34)
+
         logo = QLabel("CampusMate")
         logo.setObjectName("logo")
-        sidebar_layout.addWidget(logo)
+        brand_row.addWidget(logo_mark)
+        brand_row.addWidget(logo)
+        brand_row.addStretch()
+        sidebar_layout.addLayout(brand_row)
 
         tagline = QLabel("STUDENT PLANNER")
         tagline.setObjectName("sidebarSubtitle")
+        tagline.setContentsMargins(44, 0, 0, 0)
         sidebar_layout.addWidget(tagline)
 
         sidebar_layout.addSpacing(30)
@@ -236,14 +248,14 @@ class CampusMate(QMainWindow):
                 FROM tasks
                 WHERE completed = 0
                 ORDER BY due_date
-                LIMIT 5
+                LIMIT 4
                 """
             )
             upcoming_tasks = cursor.fetchall()
 
             cursor.execute(
                 """
-                SELECT subject, start_time, end_time, room
+                SELECT subject, teacher, start_time, end_time, room
                 FROM classes
                 WHERE LOWER(day) = LOWER(?)
                 ORDER BY start_time
@@ -256,9 +268,9 @@ class CampusMate(QMainWindow):
             connection.close()
 
         attendance_text = (
-            f"{attendance_average:.1f}%"
+            f"{attendance_average:.0f}%"
             if attendance_average is not None
-            else "No data"
+            else "—"
         )
 
         return (
@@ -341,14 +353,14 @@ class CampusMate(QMainWindow):
         )
         self.next_class_layout.setContentsMargins(18, 16, 18, 14)
         self.next_class_layout.setSpacing(3)
-        sections_layout.addWidget(self.next_class_box, 3)
+        sections_layout.addWidget(self.next_class_box, 6)
 
         self.tasks_box = QFrame()
         self.tasks_box.setObjectName("card")
         self.tasks_layout = QVBoxLayout(self.tasks_box)
         self.tasks_layout.setContentsMargins(18, 16, 18, 14)
         self.tasks_layout.setSpacing(3)
-        sections_layout.addWidget(self.tasks_box, 2)
+        sections_layout.addWidget(self.tasks_box, 5)
 
         layout.addStretch()
 
@@ -463,12 +475,16 @@ class CampusMate(QMainWindow):
         self.next_class_layout.addWidget(heading)
 
         if todays_classes:
-            for subject, start, end, room in todays_classes:
-                room_text = f"Room {room}" if room else "Class"
+            for subject, teacher, start, end, room in todays_classes:
+                class_details = " · ".join(
+                    value
+                    for value in (teacher, f"Room {room}" if room else "")
+                    if value
+                ) or "Class"
                 self.add_dashboard_row(
                     self.next_class_layout,
                     subject,
-                    room_text,
+                    class_details,
                     f"{start} – {end}",
                     "violet",
                 )

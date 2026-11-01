@@ -14,7 +14,7 @@ The next iteration added the dashboard, Study Center, Pomodoro timer, revision n
 
 ### 3. Product and macOS release preparation
 
-The product pass replaced the dark prototype styling with a calmer light interface, refined navigation, tables, cards, and page headers, and improved the Study Center scrolling layout. The dashboard now foregrounds the day’s classes and upcoming tasks. The project also gained a CampusMate app icon and a macOS build. The app creates its database tables on first launch. Packaged builds store each user's database in macOS Application Support, while source runs continue to use the project folder.
+The product pass replaced the dark prototype styling with a calmer light interface, refined navigation, cards, and page headers, and improved the Study Center scrolling layout. The dashboard foregrounds the day’s classes and upcoming tasks. The Mac screens now follow the phone app's card layouts and actions for schedule, tasks, attendance, study subjects, notes, and focus time. The desktop app also retains its local Ollama AI Tutor. The project includes a CampusMate app icon and macOS build. Packaged builds store each user's database in macOS Application Support, while source runs continue to use the project folder.
 
 The phone-friendly installable web app brings the dashboard, schedule, tasks, attendance, study subjects, revision notes, and focus timer to a browser. It can be added to an iPhone or Android home screen and saves each tester's information in that browser's local storage. It does not provide accounts, cloud sync, or the local Ollama connection used by the desktop AI Tutor.
 
@@ -46,10 +46,10 @@ The AI Tutor is optional. It requires Ollama and the `llama3.2:3b` model running
 
 ## Publishing status
 
-The app and its clean source snapshot are publicly available in [CampusMate-Desktop](https://github.com/meaditya1012-sketch/CampusMate-Desktop). The [web preview](https://meaditya1012-sketch.github.io/CampusMate-Desktop/) is intended for phone browser testing; the latest Apple silicon build is attached to the [GitHub Releases page](https://github.com/meaditya1012-sketch/CampusMate-Desktop/releases/latest). The original development repository remains private because its older history contains a tracked database and backup artifacts.
+The app and its clean source snapshot are publicly available in [CampusMate-Desktop](https://github.com/meaditya1012-sketch/CampusMate-Desktop). The [installable web app](https://meaditya1012-sketch.github.io/CampusMate-Desktop/) is intended for phone browser testing; the latest Apple silicon build is attached to the [GitHub Releases page](https://github.com/meaditya1012-sketch/CampusMate-Desktop/releases/latest). The original development repository remains private because its older history contains a tracked database and backup artifacts.
 
 ## Next steps for a public launch
 
 1. Consider Apple Developer ID signing and notarization to make installation easier for people who download the app.
 2. Build separately for Intel Macs if that architecture needs support.
-3. If a browser-accessible product is required, build a web interface and hosted data/API layer; this project is currently a native desktop application.
+3. Add accounts and a hosted data service if people need their Mac and phone records to synchronize.

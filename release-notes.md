@@ -1,14 +1,17 @@
-# CampusMate 0.2.0
+# CampusMate 0.3.0
 
-This update gives CampusMate a complete visual refresh with a lighter workspace, clearer hierarchy, refined navigation, and more consistent cards, tables, and controls.
+The Mac app now follows the phone app's card-based workflow for the main student planner features.
 
 ## What's new
 
-- Refined dashboard with a daily overview, class list, upcoming work, and quick access to the AI Tutor
-- Consistent light styling across Schedule, Tasks, Attendance, Study Center, and AI Tutor
-- Improved Study Center scrolling and compact subject and note lists
-- Quick prompt suggestions and a local model indicator in AI Tutor
-- Updated macOS app version and project preview image
+- Schedule cards with day and time details plus remove controls
+- Task filters for Open, All, and Completed, with completion and delete actions
+- Attendance progress cards with present, missed, edit, and remove actions
+- Study subject goal cards with quick 30-minute progress updates
+- Study note cards with open and delete actions, alongside the focus timer
+- Updated navigation brand and matching page titles and descriptions
+
+The desktop app retains its optional local AI Tutor. The phone app does not yet provide AI responses. Data remains local to each app and does not sync between Mac and phone.
 
 ## Install
 

@@ -1,33 +1,91 @@
-
 import sqlite3
 
-from PySide6.QtCore import QTimer, Qt
+from PySide6.QtCore import QDateTime, QTimer, Qt
 from PySide6.QtWidgets import (
-    QWidget,
-    QVBoxLayout,
+    QComboBox,
+    QDialog,
+    QDialogButtonBox,
+    QDoubleSpinBox,
+    QFormLayout,
+    QFrame,
     QHBoxLayout,
     QLabel,
-    QPushButton,
     QLineEdit,
-    QTextEdit,
-    QComboBox,
-    QTableWidget,
-    QTableWidgetItem,
     QMessageBox,
-    QInputDialog,
-    QHeaderView,
-    QFrame,
+    QPushButton,
+    QProgressBar,
     QScrollArea,
-    QSizePolicy,
+    QTextEdit,
+    QVBoxLayout,
+    QWidget,
 )
 
 from database.database import get_connection
+from screens.components import create_empty_state
+
+
+class AddSubjectDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Add a subject")
+        self.setMinimumWidth(370)
+
+        layout = QFormLayout(self)
+        layout.setContentsMargins(22, 20, 22, 18)
+        layout.setSpacing(12)
+        self.name = QLineEdit()
+        self.name.setPlaceholderText("e.g. Linear Algebra")
+        self.goal = QDoubleSpinBox()
+        self.goal.setRange(0.5, 168)
+        self.goal.setSingleStep(0.5)
+        self.goal.setValue(10)
+        self.goal.setSuffix(" hrs / week")
+        layout.addRow("Subject", self.name)
+        layout.addRow("Weekly goal", self.goal)
+
+        buttons = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Save
+            | QDialogButtonBox.StandardButton.Cancel
+        )
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
+        layout.addRow(buttons)
+
+
+class AddNoteDialog(QDialog):
+    def __init__(self, subjects, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Write a study note")
+        self.setMinimumSize(430, 390)
+
+        layout = QFormLayout(self)
+        layout.setContentsMargins(22, 20, 22, 18)
+        layout.setSpacing(12)
+        self.title = QLineEdit()
+        self.title.setPlaceholderText("e.g. Key ideas from chapter 3")
+        self.subject = QComboBox()
+        self.subject.addItem("General")
+        self.subject.addItems(subjects)
+        self.content = QTextEdit()
+        self.content.setPlaceholderText("Write a useful summary, formula, or question...")
+        self.content.setMinimumHeight(150)
+
+        layout.addRow("Note title", self.title)
+        layout.addRow("Subject", self.subject)
+        layout.addRow("Your notes", self.content)
+
+        buttons = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Save
+            | QDialogButtonBox.StandardButton.Cancel
+        )
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
+        layout.addRow(buttons)
 
 
 class StudyScreen(QWidget):
     def __init__(self):
         super().__init__()
-
         self.setObjectName("studyScreen")
         self.remaining_seconds = 25 * 60
 
@@ -40,10 +98,11 @@ class StudyScreen(QWidget):
         page_layout = QVBoxLayout(self)
         page_layout.setContentsMargins(0, 0, 0, 0)
 
-        scroll_area = QScrollArea(self)
-        scroll_area.setObjectName("studyScrollArea")
-        scroll_area.setWidgetResizable(True)
-        scroll_area.setFrameShape(QFrame.Shape.NoFrame)
+        scroll = QScrollArea(self)
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        page_layout.addWidget(scroll)
 
         content = QWidget()
         content.setObjectName("studyContent")
@@ -51,138 +110,56 @@ class StudyScreen(QWidget):
         layout.setContentsMargins(34, 28, 34, 28)
         layout.setSpacing(16)
 
-        scroll_area.setWidget(content)
-        page_layout.addWidget(scroll_area)
-
-        # Page heading
-        heading = QLabel("Study Center")
-        heading.setObjectName("pageTitle")
-        layout.addWidget(heading)
-
-        subtitle = QLabel(
-            "Organize your subjects, save revision notes, "
-            "and focus on your next goal."
-        )
+        title = QLabel("Study Center")
+        title.setObjectName("pageTitle")
+        subtitle = QLabel("Build steady progress, one session at a time.")
         subtitle.setObjectName("pageSubtitle")
-        subtitle.setWordWrap(True)
+        layout.addWidget(title)
         layout.addWidget(subtitle)
 
-        # Subjects card
+        columns = QHBoxLayout()
+        columns.setSpacing(14)
+        layout.addLayout(columns)
+
+        left_column = QVBoxLayout()
+        left_column.setSpacing(14)
+        columns.addLayout(left_column, 1)
+
+        right_column = QVBoxLayout()
+        right_column.setSpacing(14)
+        columns.addLayout(right_column, 1)
+
+        # Subjects
         subject_card = QFrame()
         subject_card.setObjectName("contentCard")
-
         subject_layout = QVBoxLayout(subject_card)
-        subject_layout.setContentsMargins(18, 16, 18, 16)
+        subject_layout.setContentsMargins(17, 15, 17, 15)
         subject_layout.setSpacing(12)
 
-        subject_heading = QLabel("My Subjects")
-        subject_heading.setObjectName("sectionHeading")
-        subject_layout.addWidget(subject_heading)
-
-        subject_row = QHBoxLayout()
-        subject_row.setSpacing(10)
-
-        self.subject_input = QLineEdit()
-        self.subject_input.setPlaceholderText(
-            "Subject name (e.g. Applied Mathematics)"
-        )
-
-        self.goal_input = QLineEdit()
-        self.goal_input.setPlaceholderText("Weekly goal (hours)")
-        self.goal_input.setText("10")
-        self.goal_input.setMaximumWidth(150)
-
-        add_subject_button = QPushButton("+ Add Subject")
+        subject_header = QHBoxLayout()
+        subject_title = QLabel("My subjects")
+        subject_title.setObjectName("sectionHeading")
+        subject_header.addWidget(subject_title, 1)
+        add_subject_button = QPushButton("+  Add")
         add_subject_button.setObjectName("primaryButton")
-        add_subject_button.setCursor(
-            Qt.CursorShape.PointingHandCursor
-        )
+        add_subject_button.setCursor(Qt.CursorShape.PointingHandCursor)
         add_subject_button.clicked.connect(self.add_subject)
+        subject_header.addWidget(add_subject_button)
+        subject_layout.addLayout(subject_header)
 
-        subject_row.addWidget(self.subject_input, 3)
-        subject_row.addWidget(self.goal_input, 1)
-        subject_row.addWidget(add_subject_button)
+        self.subjects_layout = QVBoxLayout()
+        self.subjects_layout.setSpacing(8)
+        subject_layout.addLayout(self.subjects_layout)
+        left_column.addWidget(subject_card)
 
-        subject_layout.addLayout(subject_row)
-
-        self.subject_table = QTableWidget()
-        self.subject_table.setColumnCount(3)
-        self.subject_table.setHorizontalHeaderLabels(
-            ["Subject", "Weekly Goal (hrs)", "Completed (hrs)"]
-        )
-        self.configure_table(self.subject_table)
-        self.subject_table.setMinimumHeight(120)
-        self.subject_table.setMaximumHeight(210)
-
-        subject_layout.addWidget(self.subject_table)
-        layout.addWidget(subject_card)
-
-        # Study notes card
-        notes_card = QFrame()
-        notes_card.setObjectName("contentCard")
-
-        notes_layout = QVBoxLayout(notes_card)
-        notes_layout.setContentsMargins(18, 16, 18, 16)
-        notes_layout.setSpacing(10)
-
-        notes_heading = QLabel("Study Notes")
-        notes_heading.setObjectName("sectionHeading")
-        notes_layout.addWidget(notes_heading)
-
-        self.note_title_input = QLineEdit()
-        self.note_title_input.setPlaceholderText("Note title")
-
-        self.note_subject_input = QComboBox()
-        self.note_subject_input.addItem("General")
-
-        self.note_content_input = QTextEdit()
-        self.note_content_input.setPlaceholderText(
-            "Write your revision notes here..."
-        )
-        self.note_content_input.setMinimumHeight(65)
-        self.note_content_input.setMaximumHeight(95)
-
-        save_note_button = QPushButton("Save Note")
-        save_note_button.setObjectName("primaryButton")
-        save_note_button.setCursor(
-            Qt.CursorShape.PointingHandCursor
-        )
-        save_note_button.clicked.connect(self.save_note)
-
-        notes_layout.addWidget(self.note_title_input)
-        notes_layout.addWidget(self.note_subject_input)
-        notes_layout.addWidget(self.note_content_input)
-        notes_layout.addWidget(save_note_button)
-
-        self.notes_table = QTableWidget()
-        self.notes_table.setColumnCount(3)
-        self.notes_table.setHorizontalHeaderLabels(
-            ["Title", "Subject", "Created"]
-        )
-        self.configure_table(self.notes_table)
-        self.notes_table.setMinimumHeight(125)
-        self.notes_table.setMaximumHeight(220)
-        self.notes_table.cellDoubleClicked.connect(self.open_note)
-
-        notes_layout.addWidget(self.notes_table)
-
-        tip = QLabel(
-            "Tip: Double-click any note to read its full content."
-        )
-        tip.setObjectName("pageSubtitle")
-        notes_layout.addWidget(tip)
-
-        layout.addWidget(notes_card)
-
-        # Pomodoro timer card
+        # Focus timer
         timer_card = QFrame()
         timer_card.setObjectName("contentCard")
-
         timer_layout = QVBoxLayout(timer_card)
-        timer_layout.setContentsMargins(18, 14, 18, 14)
-        timer_layout.setSpacing(8)
+        timer_layout.setContentsMargins(17, 15, 17, 16)
+        timer_layout.setSpacing(9)
 
-        timer_heading = QLabel("Pomodoro Focus Timer")
+        timer_heading = QLabel("Pomodoro focus")
         timer_heading.setObjectName("sectionHeading")
         timer_heading.setAlignment(Qt.AlignmentFlag.AlignCenter)
         timer_layout.addWidget(timer_heading)
@@ -192,369 +169,342 @@ class StudyScreen(QWidget):
         self.timer_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         timer_layout.addWidget(self.timer_label)
 
+        timer_caption = QLabel("A focused 25-minute session, then a short break.")
+        timer_caption.setObjectName("muted")
+        timer_caption.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        timer_layout.addWidget(timer_caption)
+
         timer_buttons = QHBoxLayout()
-        timer_buttons.setSpacing(10)
-
-        self.start_button = QPushButton("▶  Start")
-        self.pause_button = QPushButton("Ⅱ  Pause")
-        self.reset_button = QPushButton("↻  Reset")
-
+        timer_buttons.setSpacing(8)
+        self.start_button = QPushButton("Start focus")
         self.start_button.setObjectName("primaryButton")
-
-        for button in [
-            self.start_button,
-            self.pause_button,
-            self.reset_button,
-        ]:
+        self.reset_button = QPushButton("Reset")
+        for button in (self.start_button, self.reset_button):
             button.setCursor(Qt.CursorShape.PointingHandCursor)
             timer_buttons.addWidget(button)
-
         timer_layout.addLayout(timer_buttons)
-        layout.addWidget(timer_card)
+        left_column.addWidget(timer_card)
+        left_column.addStretch()
+
+        # Revision notes
+        notes_card = QFrame()
+        notes_card.setObjectName("contentCard")
+        notes_layout = QVBoxLayout(notes_card)
+        notes_layout.setContentsMargins(17, 15, 17, 15)
+        notes_layout.setSpacing(12)
+
+        notes_header = QHBoxLayout()
+        notes_title = QLabel("Study notes")
+        notes_title.setObjectName("sectionHeading")
+        notes_header.addWidget(notes_title, 1)
+        add_note_button = QPushButton("+  New note")
+        add_note_button.setObjectName("primaryButton")
+        add_note_button.setCursor(Qt.CursorShape.PointingHandCursor)
+        add_note_button.clicked.connect(self.add_note)
+        notes_header.addWidget(add_note_button)
+        notes_layout.addLayout(notes_header)
+
+        self.notes_layout = QVBoxLayout()
+        self.notes_layout.setSpacing(8)
+        notes_layout.addLayout(self.notes_layout)
+        right_column.addWidget(notes_card)
+        right_column.addStretch()
+
+        layout.addStretch()
+        scroll.setWidget(content)
 
         self.timer = QTimer(self)
         self.timer.setInterval(1000)
         self.timer.timeout.connect(self.update_timer)
-
-        self.start_button.clicked.connect(self.start_timer)
-        self.pause_button.clicked.connect(self.pause_timer)
+        self.start_button.clicked.connect(self.toggle_timer)
         self.reset_button.clicked.connect(self.reset_timer)
 
+    @staticmethod
+    def clear_layout(layout):
+        while layout.count():
+            item = layout.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                widget.deleteLater()
 
-    def configure_table(self, table):
-        table.setAlternatingRowColors(True)
-        table.setEditTriggers(
-            QTableWidget.EditTrigger.NoEditTriggers
-        )
-        table.setSelectionBehavior(
-            QTableWidget.SelectionBehavior.SelectRows
-        )
-        table.setSelectionMode(
-            QTableWidget.SelectionMode.SingleSelection
-        )
-        table.verticalHeader().setVisible(False)
-        table.verticalHeader().setDefaultSectionSize(34)
-        table.horizontalHeader().setSectionResizeMode(
-            QHeaderView.ResizeMode.Stretch
-        )
-        table.setSizePolicy(
-            QSizePolicy.Policy.Expanding,
-            QSizePolicy.Policy.Preferred,
-        )
+    def make_subject_card(self, record):
+        subject_id, name, goal, completed = record
+        goal = float(goal or 0)
+        completed = float(completed or 0)
+        progress_value = min(100, max(0, round(completed / goal * 100))) if goal else 0
 
-    def fit_table_height(self, table, maximum):
-        header_height = max(
-            table.horizontalHeader().sizeHint().height(), 38
-        )
-        row_height = table.verticalHeader().defaultSectionSize()
-        content_rows = max(table.rowCount(), 1)
-        table_height = min(header_height + content_rows * row_height + 14, maximum)
-        table.setFixedHeight(table_height)
+        card = QFrame()
+        card.setObjectName("subjectItem")
+        layout = QVBoxLayout(card)
+        layout.setContentsMargins(13, 11, 13, 11)
+        layout.setSpacing(8)
 
-    # Subjects
-    def add_subject(self):
-        name = self.subject_input.text().strip()
-        goal_text = self.goal_input.text().strip()
+        header = QHBoxLayout()
+        title = QLabel(name)
+        title.setObjectName("listMain")
+        title.setWordWrap(True)
+        goal_label = QLabel(f"{goal:g} hrs / week")
+        goal_label.setObjectName("subjectGoal")
+        header.addWidget(title, 1)
+        header.addWidget(goal_label)
+        layout.addLayout(header)
 
-        if not name:
-            QMessageBox.warning(
-                self,
-                "Missing Subject",
-                "Please enter a subject name.",
-            )
-            return
+        progress = QProgressBar()
+        progress.setObjectName("studyProgress")
+        progress.setRange(0, 100)
+        progress.setValue(max(0, min(100, progress_value)))
+        progress.setTextVisible(False)
+        progress.setFixedHeight(7)
+        layout.addWidget(progress)
 
-        try:
-            goal_hours = float(goal_text)
+        footer = QHBoxLayout()
+        detail = QLabel(f"{completed:.1f} hours studied")
+        detail.setObjectName("listMeta")
+        percent = QLabel(f"{max(0, progress_value)}%")
+        percent.setObjectName("studyPercent")
+        footer.addWidget(detail, 1)
+        footer.addWidget(percent)
+        layout.addLayout(footer)
 
-            if goal_hours <= 0:
-                raise ValueError
+        add_time = QPushButton("+ 30 min")
+        add_time.setObjectName("smallButton")
+        add_time.setCursor(Qt.CursorShape.PointingHandCursor)
+        add_time.clicked.connect(lambda: self.add_study_time(subject_id))
+        layout.addWidget(add_time, 0, Qt.AlignmentFlag.AlignLeft)
+        return card
 
-        except ValueError:
-            QMessageBox.warning(
-                self,
-                "Invalid Goal",
-                "Enter a weekly goal greater than zero.",
-            )
-            return
+    def make_note_card(self, record):
+        note_id, title, subject, content, created_at = record
+        card = QFrame()
+        card.setObjectName("noteItem")
 
-        connection = get_connection()
+        row = QHBoxLayout(card)
+        row.setContentsMargins(11, 10, 9, 10)
+        row.setSpacing(9)
 
-        try:
-            cursor = connection.cursor()
-            cursor.execute(
-                """
-                INSERT INTO subjects
-                    (name, goal_hours, completed_hours)
-                VALUES (?, ?, 0)
-                """,
-                (name, goal_hours),
-            )
-            connection.commit()
+        icon = QLabel("▤")
+        icon.setObjectName("noteIcon")
+        icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        icon.setFixedSize(30, 34)
+        row.addWidget(icon, 0, Qt.AlignmentFlag.AlignTop)
 
-        except sqlite3.IntegrityError:
-            QMessageBox.warning(
-                self,
-                "Subject Exists",
-                "This subject already exists.",
-            )
-            return
+        copy = QVBoxLayout()
+        copy.setSpacing(3)
+        title_button = QPushButton(title)
+        title_button.setObjectName("noteLink")
+        title_button.setCursor(Qt.CursorShape.PointingHandCursor)
+        title_button.setToolTip("Open note")
+        title_button.clicked.connect(lambda: self.open_note(note_id))
+        created = QDateTime.fromString(str(created_at or ""), "yyyy-MM-dd HH:mm:ss")
+        date_text = created.toString("MMM d") if created.isValid() else str(created_at or "")
+        meta = QLabel(f"{subject or 'General'}  ·  {date_text}")
+        meta.setObjectName("listMeta")
+        meta.setWordWrap(True)
+        preview_text = content.replace("\n", " ")
+        if len(preview_text) > 110:
+            preview_text = preview_text[:107].rstrip() + "…"
+        preview = QLabel(preview_text)
+        preview.setObjectName("notePreview")
+        preview.setWordWrap(True)
+        copy.addWidget(title_button)
+        copy.addWidget(meta)
+        copy.addWidget(preview)
+        row.addLayout(copy, 1)
 
-        except sqlite3.Error as error:
-            QMessageBox.critical(
-                self,
-                "Database Error",
-                f"Could not save the subject:\n{error}",
-            )
-            return
-
-        finally:
-            connection.close()
-
-        self.subject_input.clear()
-        self.goal_input.setText("10")
-        self.load_subjects()
+        remove = QPushButton("×")
+        remove.setObjectName("iconButton")
+        remove.setToolTip("Delete note")
+        remove.setAccessibleName(f"Delete note {title}")
+        remove.clicked.connect(lambda: self.delete_note(note_id, title))
+        row.addWidget(remove, 0, Qt.AlignmentFlag.AlignTop)
+        return card
 
     def load_subjects(self):
         connection = get_connection()
-
         try:
-            cursor = connection.cursor()
-            cursor.execute(
-                """
-                SELECT name, goal_hours, completed_hours
-                FROM subjects
-                ORDER BY name COLLATE NOCASE
-                """
-            )
-            subjects = cursor.fetchall()
-
+            records = connection.execute(
+                "SELECT id, name, goal_hours, completed_hours FROM subjects ORDER BY name COLLATE NOCASE"
+            ).fetchall()
         except sqlite3.Error as error:
-            QMessageBox.warning(
-                self,
-                "Database Error",
-                f"Could not load subjects:\n{error}",
-            )
+            QMessageBox.warning(self, "Database error", f"Could not load subjects:\n{error}")
             return
-
         finally:
             connection.close()
 
-        self.subject_table.setRowCount(0)
-
-        for subject, goal, completed in subjects:
-            row = self.subject_table.rowCount()
-            self.subject_table.insertRow(row)
-
-            values = [
-                subject,
-                f"{goal:g}" if isinstance(goal, (int, float)) else str(goal),
-                f"{completed:g}" if isinstance(completed, (int, float)) else str(completed),
-            ]
-
-            for column, value in enumerate(values):
-                item = QTableWidgetItem(value)
-                if column > 0:
-                    item.setTextAlignment(
-                        Qt.AlignmentFlag.AlignCenter
-                    )
-                self.subject_table.setItem(row, column, item)
-
-        self.fit_table_height(self.subject_table, 210)
-
-        current_subject = self.note_subject_input.currentText()
-
-        self.note_subject_input.blockSignals(True)
-        self.note_subject_input.clear()
-        self.note_subject_input.addItem("General")
-
-        for subject, _, _ in subjects:
-            self.note_subject_input.addItem(subject)
-
-        index = self.note_subject_input.findText(current_subject)
-        if index >= 0:
-            self.note_subject_input.setCurrentIndex(index)
-
-        self.note_subject_input.blockSignals(False)
-
-    # Study notes
-    def save_note(self):
-        title = self.note_title_input.text().strip()
-        subject = self.note_subject_input.currentText()
-        content = self.note_content_input.toPlainText().strip()
-
-        if not title:
-            QMessageBox.warning(
-                self,
-                "Missing Title",
-                "Please enter a title for your note.",
+        self.clear_layout(self.subjects_layout)
+        if not records:
+            self.subjects_layout.addWidget(
+                create_empty_state(
+                    "Choose what to focus on",
+                    "Add a subject and set a weekly study goal.",
+                )
             )
-            return
+        else:
+            for record in records:
+                self.subjects_layout.addWidget(self.make_subject_card(record))
 
-        if not content:
-            QMessageBox.warning(
-                self,
-                "Empty Note",
-                "Please write some note content first.",
-            )
+    def add_subject(self):
+        dialog = AddSubjectDialog(self)
+        if not dialog.exec():
             return
-
-        if subject == "General":
-            subject = None
+        name = dialog.name.text().strip()
+        if not name:
+            QMessageBox.warning(self, "Missing subject", "Enter a subject name.")
+            return
 
         connection = get_connection()
-
         try:
-            cursor = connection.cursor()
-            cursor.execute(
-                """
-                INSERT INTO study_notes (title, subject, content)
-                VALUES (?, ?, ?)
-                """,
-                (title, subject, content),
+            connection.execute(
+                "INSERT INTO subjects (name, goal_hours, completed_hours) VALUES (?, ?, 0)",
+                (name, dialog.goal.value()),
             )
             connection.commit()
-
-        except sqlite3.Error as error:
-            QMessageBox.critical(
-                self,
-                "Database Error",
-                f"Could not save the note:\n{error}",
-            )
+        except sqlite3.IntegrityError:
+            QMessageBox.warning(self, "Subject already exists", "This subject is already in your study list.")
             return
-
+        except sqlite3.Error as error:
+            QMessageBox.critical(self, "Database error", f"Could not save the subject:\n{error}")
+            return
         finally:
             connection.close()
+        self.load_subjects()
 
-        self.note_title_input.clear()
-        self.note_content_input.clear()
-        self.load_notes()
+    def add_study_time(self, subject_id):
+        connection = get_connection()
+        try:
+            connection.execute(
+                "UPDATE subjects SET completed_hours = COALESCE(completed_hours, 0) + 0.5 WHERE id = ?",
+                (subject_id,),
+            )
+            connection.commit()
+        finally:
+            connection.close()
+        self.load_subjects()
 
     def load_notes(self):
         connection = get_connection()
-
         try:
-            cursor = connection.cursor()
-            cursor.execute(
+            records = connection.execute(
                 """
-                SELECT title, subject, created_at
-                FROM study_notes
-                ORDER BY id DESC
+                SELECT id, title, subject, content, created_at
+                FROM study_notes ORDER BY id DESC
                 """
-            )
-            notes = cursor.fetchall()
-
+            ).fetchall()
         except sqlite3.Error as error:
-            QMessageBox.warning(
-                self,
-                "Database Error",
-                f"Could not load notes:\n{error}",
-            )
+            QMessageBox.warning(self, "Database error", f"Could not load notes:\n{error}")
             return
-
         finally:
             connection.close()
 
-        self.notes_table.setRowCount(0)
-
-        for title, subject, created_at in notes:
-            row = self.notes_table.rowCount()
-            self.notes_table.insertRow(row)
-
-            values = [
-                title,
-                subject or "General",
-                str(created_at or ""),
-            ]
-
-            for column, value in enumerate(values):
-                item = QTableWidgetItem(value)
-                self.notes_table.setItem(row, column, item)
-
-        self.fit_table_height(self.notes_table, 220)
-
-    def open_note(self, row, column):
-        title_item = self.notes_table.item(row, 0)
-
-        if title_item is None:
-            return
-
-        title = title_item.text()
-
-        connection = get_connection()
-
-        try:
-            cursor = connection.cursor()
-            cursor.execute(
-                """
-                SELECT content
-                FROM study_notes
-                WHERE title = ?
-                ORDER BY id DESC
-                LIMIT 1
-                """,
-                (title,),
-            )
-            result = cursor.fetchone()
-
-        except sqlite3.Error as error:
-            QMessageBox.warning(
-                self,
-                "Database Error",
-                f"Could not open the note:\n{error}",
-            )
-            return
-
-        finally:
-            connection.close()
-
-        if result:
-            content = result[0] or ""
-            QMessageBox.information(
-                self,
-                title,
-                content,
+        self.clear_layout(self.notes_layout)
+        if not records:
+            self.notes_layout.addWidget(
+                create_empty_state(
+                    "Keep your best ideas close",
+                    "Save a revision note so you can find it later.",
+                )
             )
         else:
-            QMessageBox.warning(
-                self,
-                "Note Not Found",
-                "The selected note could not be found.",
-            )
+            for record in records:
+                self.notes_layout.addWidget(self.make_note_card(record))
 
-    # Pomodoro timer
+    def add_note(self):
+        connection = get_connection()
+        try:
+            subjects = [
+                row[0]
+                for row in connection.execute(
+                    "SELECT name FROM subjects ORDER BY name COLLATE NOCASE"
+                ).fetchall()
+            ]
+        finally:
+            connection.close()
+
+        dialog = AddNoteDialog(subjects, self)
+        if not dialog.exec():
+            return
+        title = dialog.title.text().strip()
+        note_content = dialog.content.toPlainText().strip()
+        if not title or not note_content:
+            QMessageBox.warning(self, "Note incomplete", "Add a title and some note content.")
+            return
+        subject = dialog.subject.currentText()
+        subject = None if subject == "General" else subject
+
+        connection = get_connection()
+        try:
+            connection.execute(
+                "INSERT INTO study_notes (title, subject, content) VALUES (?, ?, ?)",
+                (title, subject, note_content),
+            )
+            connection.commit()
+        except sqlite3.Error as error:
+            QMessageBox.critical(self, "Database error", f"Could not save the note:\n{error}")
+            return
+        finally:
+            connection.close()
+        self.load_notes()
+
+    def open_note(self, note_id):
+        connection = get_connection()
+        try:
+            record = connection.execute(
+                "SELECT title, content FROM study_notes WHERE id = ?",
+                (note_id,),
+            ).fetchone()
+        finally:
+            connection.close()
+        if record:
+            QMessageBox.information(self, record[0], record[1] or "")
+
+    def delete_note(self, note_id, title):
+        answer = QMessageBox.question(
+            self,
+            "Delete note",
+            f"Delete the note “{title}”?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        )
+        if answer != QMessageBox.StandardButton.Yes:
+            return
+        connection = get_connection()
+        try:
+            connection.execute("DELETE FROM study_notes WHERE id = ?", (note_id,))
+            connection.commit()
+        finally:
+            connection.close()
+        self.load_notes()
+
     def update_timer_label(self):
         minutes, seconds = divmod(self.remaining_seconds, 60)
         self.timer_label.setText(f"{minutes:02d}:{seconds:02d}")
 
-    def start_timer(self):
+    def toggle_timer(self):
+        if self.timer.isActive():
+            self.timer.stop()
+            self.start_button.setText("Resume focus")
+            return
         if self.remaining_seconds <= 0:
             self.remaining_seconds = 25 * 60
             self.update_timer_label()
-
         self.timer.start()
-        self.start_button.setEnabled(False)
-
-    def pause_timer(self):
-        self.timer.stop()
-        self.start_button.setEnabled(True)
+        self.start_button.setText("Pause")
 
     def reset_timer(self):
         self.timer.stop()
         self.remaining_seconds = 25 * 60
         self.update_timer_label()
-        self.start_button.setEnabled(True)
+        self.start_button.setText("Start focus")
 
     def update_timer(self):
         if self.remaining_seconds > 0:
             self.remaining_seconds -= 1
             self.update_timer_label()
-
         if self.remaining_seconds <= 0:
             self.timer.stop()
-            self.start_button.setEnabled(True)
+            self.start_button.setText("Start focus")
             QMessageBox.information(
                 self,
-                "Focus Session Complete",
-                "Great work! Your 25-minute focus session is complete.",
+                "Focus session complete",
+                "Nice work. Your 25-minute focus session is complete.",
             )
