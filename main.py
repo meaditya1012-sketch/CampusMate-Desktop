@@ -52,17 +52,17 @@ class CampusMate(QMainWindow):
         # Sidebar
         sidebar = QFrame()
         sidebar.setObjectName("sidebar")
-        sidebar.setFixedWidth(225)
+        sidebar.setFixedWidth(238)
 
         sidebar_layout = QVBoxLayout(sidebar)
-        sidebar_layout.setContentsMargins(18, 28, 18, 22)
-        sidebar_layout.setSpacing(8)
+        sidebar_layout.setContentsMargins(19, 28, 19, 22)
+        sidebar_layout.setSpacing(9)
 
         logo = QLabel("CampusMate")
         logo.setObjectName("logo")
         sidebar_layout.addWidget(logo)
 
-        tagline = QLabel("YOUR STUDENT SPACE")
+        tagline = QLabel("STUDENT PLANNER")
         tagline.setObjectName("sidebarSubtitle")
         sidebar_layout.addWidget(tagline)
 
@@ -275,15 +275,15 @@ class CampusMate(QMainWindow):
         page.setObjectName("homePage")
 
         layout = QVBoxLayout(page)
-        layout.setContentsMargins(34, 26, 34, 24)
-        layout.setSpacing(11)
+        layout.setContentsMargins(34, 28, 34, 26)
+        layout.setSpacing(15)
 
         hero = QFrame()
         hero.setObjectName("heroCard")
 
         hero_layout = QHBoxLayout(hero)
-        hero_layout.setContentsMargins(24, 20, 24, 20)
-        hero_layout.setSpacing(18)
+        hero_layout.setContentsMargins(26, 22, 26, 22)
+        hero_layout.setSpacing(24)
 
         hero_copy = QVBoxLayout()
         hero_copy.setSpacing(7)
@@ -327,35 +327,34 @@ class CampusMate(QMainWindow):
         layout.addSpacing(4)
 
         self.cards_layout = QHBoxLayout()
-        
-
+        self.cards_layout.setSpacing(14)
         layout.addLayout(self.cards_layout)
+
+        sections_layout = QHBoxLayout()
+        sections_layout.setSpacing(14)
+        layout.addLayout(sections_layout)
 
         self.next_class_box = QFrame()
         self.next_class_box.setObjectName("card")
         self.next_class_layout = QVBoxLayout(
             self.next_class_box
         )
-        self.next_class_layout.setContentsMargins(
-            20, 18, 20, 18
-        )
-        self.next_class_layout.setSpacing(10)
-        layout.addWidget(self.next_class_box)
+        self.next_class_layout.setContentsMargins(18, 16, 18, 14)
+        self.next_class_layout.setSpacing(3)
+        sections_layout.addWidget(self.next_class_box, 3)
 
         self.tasks_box = QFrame()
         self.tasks_box.setObjectName("card")
         self.tasks_layout = QVBoxLayout(self.tasks_box)
-        self.tasks_layout.setContentsMargins(
-            20, 18, 20, 18
-        )
-        self.tasks_layout.setSpacing(10)
-        layout.addWidget(self.tasks_box)
+        self.tasks_layout.setContentsMargins(18, 16, 18, 14)
+        self.tasks_layout.setSpacing(3)
+        sections_layout.addWidget(self.tasks_box, 2)
 
         layout.addStretch()
 
         self.refresh_dashboard()
         return page
-    
+
     def create_card(self, title, value, accent):
         card = QFrame()
         card.setObjectName("statCard")
@@ -363,26 +362,64 @@ class CampusMate(QMainWindow):
         card.setMinimumHeight(112)
 
         card_layout = QVBoxLayout(card)
-        card_layout.setContentsMargins(20, 16, 20, 14)
-        card_layout.setSpacing(8)
+        card_layout.setContentsMargins(18, 15, 18, 13)
+        card_layout.setSpacing(6)
 
-        title_label = QLabel(title.upper())
+        title_label = QLabel(title)
         title_label.setObjectName("statTitle")
 
         value_label = QLabel(value)
         value_label.setObjectName("statValue")
 
-        accent = QFrame()
-        accent.setObjectName("statAccent")
-        accent.setProperty("variant", card.property("variant"))
-        accent.setFixedSize(34, 3)
+        accent_bar = QFrame()
+        accent_bar.setObjectName("statAccent")
+        accent_bar.setProperty("variant", card.property("variant"))
+        accent_bar.setFixedSize(30, 4)
 
         card_layout.addWidget(title_label)
         card_layout.addWidget(value_label)
         card_layout.addStretch()
-        card_layout.addWidget(accent)
+        card_layout.addWidget(accent_bar)
 
         return card
+
+    def add_dashboard_row(self, layout, primary, secondary, trailing, variant):
+        row = QFrame()
+        row.setObjectName("dashboardRow")
+
+        row_layout = QHBoxLayout(row)
+        row_layout.setContentsMargins(0, 8, 0, 8)
+        row_layout.setSpacing(10)
+
+        dot = QLabel("●")
+        dot.setObjectName("rowDot")
+        dot.setProperty("variant", variant)
+        row_layout.addWidget(dot, 0, Qt.AlignmentFlag.AlignTop)
+
+        details = QVBoxLayout()
+        details.setSpacing(3)
+
+        primary_label = QLabel(primary)
+        primary_label.setObjectName("listMain")
+        primary_label.setWordWrap(True)
+
+        secondary_label = QLabel(secondary or " ")
+        secondary_label.setObjectName("listMeta")
+        secondary_label.setWordWrap(True)
+
+        details.addWidget(primary_label)
+        details.addWidget(secondary_label)
+        row_layout.addLayout(details, 1)
+
+        trailing_label = QLabel(trailing or "")
+        trailing_label.setObjectName("rowTrailing")
+        trailing_label.setAlignment(
+            Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
+        )
+        trailing_label.setWordWrap(True)
+        row_layout.addWidget(trailing_label)
+
+        layout.addWidget(row)
 
 
     def clear_layout(self, layout):
@@ -410,8 +447,8 @@ class CampusMate(QMainWindow):
         self.clear_layout(self.cards_layout)
 
         for title, value, accent in [
-            ("Today's Classes", str(classes_count), "violet"),
-            ("Pending Tasks", str(pending_count), "mint"),
+            ("Classes today", str(classes_count), "violet"),
+            ("Open tasks", str(pending_count), "mint"),
             ("Attendance", attendance_text, "amber"),
         ]:
             self.cards_layout.addWidget(
@@ -421,51 +458,49 @@ class CampusMate(QMainWindow):
         # Today's classes
         self.clear_layout(self.next_class_layout)
 
-        heading = QLabel("TODAY'S CLASSES")
+        heading = QLabel("Today’s classes")
         heading.setObjectName("cardTitle")
         self.next_class_layout.addWidget(heading)
 
         if todays_classes:
             for subject, start, end, room in todays_classes:
-                details = f"{start} – {end}"
-
-                if room:
-                    details += f"    ·    Room {room}"
-
-                label = QLabel(f"{subject}    {details}")
-                label.setObjectName("muted")
-                label.setWordWrap(True)
-                self.next_class_layout.addWidget(label)
+                room_text = f"Room {room}" if room else "Class"
+                self.add_dashboard_row(
+                    self.next_class_layout,
+                    subject,
+                    room_text,
+                    f"{start} – {end}",
+                    "violet",
+                )
         else:
             label = QLabel("No classes scheduled for today.")
             label.setObjectName("muted")
             self.next_class_layout.addWidget(label)
 
+        self.next_class_layout.addStretch()
+
         # Pending tasks
         self.clear_layout(self.tasks_layout)
 
-        heading = QLabel("PENDING TASKS")
+        heading = QLabel("Coming up")
         heading.setObjectName("cardTitle")
         self.tasks_layout.addWidget(heading)
 
         if upcoming_tasks:
             for title, subject, due_date in upcoming_tasks:
-                details = title
-
-                if subject:
-                    details += f"    ·    {subject}"
-
-                if due_date:
-                    details += f"    ·    Due {due_date}"
-
-                label = QLabel(details)
-                label.setObjectName("muted")
-                label.setWordWrap(True)
-                self.tasks_layout.addWidget(label)
+                self.add_dashboard_row(
+                    self.tasks_layout,
+                    title,
+                    subject or "Assignment",
+                    due_date or "No due date",
+                    "amber",
+                )
         else:
             label = QLabel("You're all caught up!")
             label.setObjectName("muted")
             self.tasks_layout.addWidget(label)
+
+        self.tasks_layout.addStretch()
 
     def show_home(self):
         self.refresh_dashboard()

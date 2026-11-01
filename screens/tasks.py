@@ -1,3 +1,5 @@
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QColor
 from PySide6.QtWidgets import (
     QWidget,
     QVBoxLayout,
@@ -15,6 +17,7 @@ from PySide6.QtWidgets import (
     QMessageBox,
 )
 from database.database import get_connection
+from screens.components import create_empty_state, fit_table_height
 
 
 class AddTaskDialog(QDialog):
@@ -67,12 +70,13 @@ class TasksScreen(QWidget):
         layout = QVBoxLayout(self)
 
         layout.setContentsMargins(34, 28, 34, 26)
-        layout.setSpacing(12)
+        layout.setSpacing(16)
 
-        # -------------------------
-        # Title
-        # -------------------------
+        header_row = QHBoxLayout()
+        header_row.setSpacing(12)
 
+        heading_layout = QVBoxLayout()
+        heading_layout.setSpacing(4)
         title = QLabel("Tasks")
         title.setObjectName("pageTitle")
 
@@ -82,8 +86,26 @@ class TasksScreen(QWidget):
 
         subtitle.setObjectName("pageSubtitle")
 
-        layout.addWidget(title)
-        layout.addWidget(subtitle)
+        heading_layout.addWidget(title)
+        heading_layout.addWidget(subtitle)
+        header_row.addLayout(heading_layout, 1)
+
+        add_button = QPushButton("+  Add task")
+        add_button.setObjectName("primaryButton")
+        add_button.setCursor(Qt.CursorShape.PointingHandCursor)
+        add_button.clicked.connect(self.open_add_task)
+        header_row.addWidget(
+            add_button,
+            0,
+            Qt.AlignmentFlag.AlignBottom,
+        )
+        layout.addLayout(header_row)
+
+        self.empty_state = create_empty_state(
+            "No tasks on your list yet",
+            "Add an assignment or deadline and it will show up here.",
+        )
+        layout.addWidget(self.empty_state)
 
         # -------------------------
         # Task table
@@ -95,7 +117,7 @@ class TasksScreen(QWidget):
         self.table.setObjectName("dataTable")
         self.table.setAlternatingRowColors(True)
         self.table.verticalHeader().setVisible(False)
-        self.table.verticalHeader().setDefaultSectionSize(42)
+        self.table.verticalHeader().setDefaultSectionSize(46)
         self.table.setShowGrid(False)
         self.table.setEditTriggers(
             QTableWidget.EditTrigger.NoEditTriggers
@@ -115,26 +137,13 @@ class TasksScreen(QWidget):
             "Status"
         ])
 
-        self.table.horizontalHeader().setSectionResizeMode(
-            QHeaderView.Stretch
-        )
+        header = self.table.horizontalHeader()
+        header.setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
+        header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
 
         layout.addWidget(self.table)
-
-        # -------------------------
-        # Add Task button
-        # -------------------------
-
-        add_button = QPushButton("+ Add Task")
-
-        add_button.setObjectName("primaryButton")
-
-        add_button.clicked.connect(self.open_add_task)
-
-        action_row = QHBoxLayout()
-        action_row.addStretch()
-        action_row.addWidget(add_button)
-        layout.addLayout(action_row)
+        layout.addStretch()
 
         # Load saved tasks
         self.load_tasks()
@@ -178,19 +187,34 @@ class TasksScreen(QWidget):
 
             values = [
                 title,
-                subject,
-                due_date,
+                subject or "—",
+                due_date or "—",
                 priority,
                 status
             ]
 
             for column, value in enumerate(values):
+                item = QTableWidgetItem(str(value))
+                if column == 3:
+                    priority_colors = {
+                        "high": "#C45D64",
+                        "medium": "#B88739",
+                        "low": "#4D987B",
+                    }
+                    item.setForeground(
+                        QColor(priority_colors.get(str(value).lower(), "#647189"))
+                    )
+                elif column == 4:
+                    item.setForeground(
+                        QColor("#4D987B" if completed else "#7B879B")
+                    )
+                self.table.setItem(row, column, item)
 
-                self.table.setItem(
-                    row,
-                    column,
-                    QTableWidgetItem(str(value))
-                )
+        has_tasks = bool(tasks)
+        self.empty_state.setVisible(not has_tasks)
+        self.table.setVisible(has_tasks)
+        if has_tasks:
+            fit_table_height(self.table, len(tasks))
 
     # -------------------------
     # Save task

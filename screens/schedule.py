@@ -1,3 +1,4 @@
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QWidget,
     QVBoxLayout,
@@ -14,6 +15,7 @@ from PySide6.QtWidgets import (
     QMessageBox,
 )
 from database.database import get_connection
+from screens.components import create_empty_state, fit_table_height
 
 
 class AddClassDialog(QDialog):
@@ -65,17 +67,40 @@ class ScheduleScreen(QWidget):
         layout = QVBoxLayout(self)
 
         layout.setContentsMargins(34, 28, 34, 26)
-        layout.setSpacing(12)
+        layout.setSpacing(16)
 
-        # Title
+        header_row = QHBoxLayout()
+        header_row.setSpacing(12)
+
+        heading_layout = QVBoxLayout()
+        heading_layout.setSpacing(4)
+
         title = QLabel("Schedule")
         title.setObjectName("pageTitle")
 
         subtitle = QLabel("Your weekly class timetable")
         subtitle.setObjectName("pageSubtitle")
 
-        layout.addWidget(title)
-        layout.addWidget(subtitle)
+        heading_layout.addWidget(title)
+        heading_layout.addWidget(subtitle)
+        header_row.addLayout(heading_layout, 1)
+
+        add_button = QPushButton("+  Add class")
+        add_button.setObjectName("primaryButton")
+        add_button.setCursor(Qt.CursorShape.PointingHandCursor)
+        add_button.clicked.connect(self.open_add_class)
+        header_row.addWidget(
+            add_button,
+            0,
+            Qt.AlignmentFlag.AlignBottom,
+        )
+        layout.addLayout(header_row)
+
+        self.empty_state = create_empty_state(
+            "No classes on your schedule yet",
+            "Add your first class to build a timetable for the week.",
+        )
+        layout.addWidget(self.empty_state)
 
         # Schedule table
         self.table = QTableWidget()
@@ -84,7 +109,7 @@ class ScheduleScreen(QWidget):
         self.table.setObjectName("dataTable")
         self.table.setAlternatingRowColors(True)
         self.table.verticalHeader().setVisible(False)
-        self.table.verticalHeader().setDefaultSectionSize(42)
+        self.table.verticalHeader().setDefaultSectionSize(46)
         self.table.setShowGrid(False)
         self.table.setEditTriggers(
             QTableWidget.EditTrigger.NoEditTriggers
@@ -104,23 +129,13 @@ class ScheduleScreen(QWidget):
             "Room"
         ])
 
-        self.table.horizontalHeader().setSectionResizeMode(
-            QHeaderView.Stretch
-        )
+        header = self.table.horizontalHeader()
+        header.setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
+        header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+        header.setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
 
         layout.addWidget(self.table)
-
-        # Add Class button
-        add_button = QPushButton("+ Add Class")
-
-        add_button.setObjectName("primaryButton")
-
-        add_button.clicked.connect(self.open_add_class)
-
-        action_row = QHBoxLayout()
-        action_row.addStretch()
-        action_row.addWidget(add_button)
-        layout.addLayout(action_row)
+        layout.addStretch()
 
         # Load saved classes
         self.load_classes()
@@ -176,6 +191,12 @@ class ScheduleScreen(QWidget):
                     column,
                     QTableWidgetItem(value)
                 )
+
+        has_classes = bool(classes)
+        self.empty_state.setVisible(not has_classes)
+        self.table.setVisible(has_classes)
+        if has_classes:
+            fit_table_height(self.table, len(classes))
 
     # --------------------------------
     # Save class to database

@@ -88,17 +88,44 @@ class AITutorScreen(QWidget):
     def build_ui(self):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(34, 28, 34, 26)
-        layout.setSpacing(14)
+        layout.setSpacing(13)
 
+        header_row = QHBoxLayout()
+        header_row.setSpacing(14)
+
+        heading_group = QVBoxLayout()
+        heading_group.setSpacing(4)
         heading = QLabel("AI Tutor")
         heading.setObjectName("pageTitle")
-        layout.addWidget(heading)
 
-        subtitle = QLabel(
-            f"Ask questions and learn step by step • Local model: {MODEL}"
-        )
+        subtitle = QLabel("A patient study partner, ready when you are.")
         subtitle.setObjectName("pageSubtitle")
-        layout.addWidget(subtitle)
+        heading_group.addWidget(heading)
+        heading_group.addWidget(subtitle)
+        header_row.addLayout(heading_group, 1)
+
+        model_badge = QLabel(f"●  Local model  ·  {MODEL}")
+        model_badge.setObjectName("modelBadge")
+        model_badge.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        header_row.addWidget(model_badge, 0, Qt.AlignmentFlag.AlignVCenter)
+        layout.addLayout(header_row)
+
+        prompt_row = QHBoxLayout()
+        prompt_row.setSpacing(8)
+        for prompt in [
+            "Explain a concept",
+            "Walk me through a problem",
+            "Quiz me",
+        ]:
+            prompt_button = QPushButton(prompt)
+            prompt_button.setObjectName("promptButton")
+            prompt_button.setCursor(Qt.CursorShape.PointingHandCursor)
+            prompt_button.clicked.connect(
+                lambda _checked=False, value=prompt: self.use_prompt(value)
+            )
+            prompt_row.addWidget(prompt_button)
+        prompt_row.addStretch()
+        layout.addLayout(prompt_row)
 
         self.chat_display = QPlainTextEdit()
         self.chat_display.setObjectName("aiChatDisplay")
@@ -129,12 +156,24 @@ class AITutorScreen(QWidget):
         clear_button = QPushButton("Clear Chat")
         clear_button.setObjectName("secondaryButton")
         clear_button.clicked.connect(self.clear_chat)
-        layout.addWidget(clear_button)
+        footer_row = QHBoxLayout()
+        footer_row.addStretch()
+        footer_row.addWidget(clear_button)
+        layout.addLayout(footer_row)
 
         self.chat_display.appendPlainText(
             "CampusMate: Hi! I'm your AI Tutor. "
             "What would you like to learn today?\n"
         )
+
+    def use_prompt(self, prompt):
+        examples = {
+            "Explain a concept": "Explain a difficult concept in simple steps.",
+            "Walk me through a problem": "Walk me through this problem step by step: ",
+            "Quiz me": "Quiz me on a topic and wait for my answer.",
+        }
+        self.question_input.setText(examples.get(prompt, prompt))
+        self.question_input.setFocus()
 
     def send_question(self):
         question = self.question_input.text().strip()

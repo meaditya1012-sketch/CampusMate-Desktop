@@ -1,4 +1,6 @@
 
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QColor
 from PySide6.QtWidgets import (
     QWidget,
     QVBoxLayout,
@@ -15,6 +17,7 @@ from PySide6.QtWidgets import (
     QMessageBox,
 )
 from database.database import get_connection
+from screens.components import create_empty_state, fit_table_height
 
 
 class AddAttendanceDialog(QDialog):
@@ -59,12 +62,13 @@ class AttendanceScreen(QWidget):
         layout = QVBoxLayout(self)
 
         layout.setContentsMargins(34, 28, 34, 26)
-        layout.setSpacing(12)
+        layout.setSpacing(16)
 
-        # -------------------------
-        # Title
-        # -------------------------
+        header_row = QHBoxLayout()
+        header_row.setSpacing(12)
 
+        heading_layout = QVBoxLayout()
+        heading_layout.setSpacing(4)
         title = QLabel("Attendance")
         title.setObjectName("pageTitle")
 
@@ -74,8 +78,26 @@ class AttendanceScreen(QWidget):
 
         subtitle.setObjectName("pageSubtitle")
 
-        layout.addWidget(title)
-        layout.addWidget(subtitle)
+        heading_layout.addWidget(title)
+        heading_layout.addWidget(subtitle)
+        header_row.addLayout(heading_layout, 1)
+
+        add_button = QPushButton("+  Add subject")
+        add_button.setObjectName("primaryButton")
+        add_button.setCursor(Qt.CursorShape.PointingHandCursor)
+        add_button.clicked.connect(self.open_add_attendance)
+        header_row.addWidget(
+            add_button,
+            0,
+            Qt.AlignmentFlag.AlignBottom,
+        )
+        layout.addLayout(header_row)
+
+        self.empty_state = create_empty_state(
+            "Attendance starts here",
+            "Add a subject and your attended classes to track your progress.",
+        )
+        layout.addWidget(self.empty_state)
 
         # -------------------------
         # Attendance table
@@ -87,7 +109,7 @@ class AttendanceScreen(QWidget):
         self.table.setObjectName("dataTable")
         self.table.setAlternatingRowColors(True)
         self.table.verticalHeader().setVisible(False)
-        self.table.verticalHeader().setDefaultSectionSize(42)
+        self.table.verticalHeader().setDefaultSectionSize(46)
         self.table.setShowGrid(False)
         self.table.setEditTriggers(
             QTableWidget.EditTrigger.NoEditTriggers
@@ -107,26 +129,12 @@ class AttendanceScreen(QWidget):
             "Status"
         ])
 
-        self.table.horizontalHeader().setSectionResizeMode(
-            QHeaderView.Stretch
-        )
+        header = self.table.horizontalHeader()
+        header.setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
+        header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
 
         layout.addWidget(self.table)
-
-        # -------------------------
-        # Add button
-        # -------------------------
-
-        add_button = QPushButton("+ Add Subject")
-
-        add_button.setObjectName("primaryButton")
-
-        add_button.clicked.connect(self.open_add_attendance)
-
-        action_row = QHBoxLayout()
-        action_row.addStretch()
-        action_row.addWidget(add_button)
-        layout.addLayout(action_row)
+        layout.addStretch()
 
         # Load saved attendance
         self.load_attendance()
@@ -149,13 +157,13 @@ class AttendanceScreen(QWidget):
     def get_status(self, percentage):
 
         if percentage >= 75:
-            return "🟢 Good"
+            return "On track"
 
         elif percentage >= 65:
-            return "🟡 Warning"
+            return "Watch"
 
         else:
-            return "🔴 Low"
+            return "At risk"
 
     # -------------------------
     # Load attendance
@@ -205,12 +213,21 @@ class AttendanceScreen(QWidget):
             ]
 
             for column, value in enumerate(values):
+                item = QTableWidgetItem(value)
+                if column == 4:
+                    status_colors = {
+                        "On track": "#4D987B",
+                        "Watch": "#B88739",
+                        "At risk": "#C45D64",
+                    }
+                    item.setForeground(QColor(status_colors[value]))
+                self.table.setItem(row, column, item)
 
-                self.table.setItem(
-                    row,
-                    column,
-                    QTableWidgetItem(value)
-                )
+        has_records = bool(records)
+        self.empty_state.setVisible(not has_records)
+        self.table.setVisible(has_records)
+        if has_records:
+            fit_table_height(self.table, len(records))
 
     # -------------------------
     # Save attendance

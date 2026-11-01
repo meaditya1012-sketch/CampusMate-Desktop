@@ -49,7 +49,7 @@ app = BUNDLE(
     bundle_identifier='com.campusmate.app',
     info_plist={
         'CFBundleDisplayName': 'CampusMate',
-        'CFBundleShortVersionString': '0.1.0',
-        'CFBundleVersion': '1',
+        'CFBundleShortVersionString': '0.2.0',
+        'CFBundleVersion': '2',
     },
 )

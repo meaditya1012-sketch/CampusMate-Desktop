@@ -17,6 +17,7 @@ from PySide6.QtWidgets import (
     QInputDialog,
     QHeaderView,
     QFrame,
+    QScrollArea,
     QSizePolicy,
 )
 
@@ -36,9 +37,22 @@ class StudyScreen(QWidget):
         self.update_timer_label()
 
     def build_ui(self):
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(30, 25, 30, 25)
-        layout.setSpacing(14)
+        page_layout = QVBoxLayout(self)
+        page_layout.setContentsMargins(0, 0, 0, 0)
+
+        scroll_area = QScrollArea(self)
+        scroll_area.setObjectName("studyScrollArea")
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setFrameShape(QFrame.Shape.NoFrame)
+
+        content = QWidget()
+        content.setObjectName("studyContent")
+        layout = QVBoxLayout(content)
+        layout.setContentsMargins(34, 28, 34, 28)
+        layout.setSpacing(16)
+
+        scroll_area.setWidget(content)
+        page_layout.addWidget(scroll_area)
 
         # Page heading
         heading = QLabel("Study Center")
@@ -98,7 +112,7 @@ class StudyScreen(QWidget):
         )
         self.configure_table(self.subject_table)
         self.subject_table.setMinimumHeight(120)
-        self.subject_table.setMaximumHeight(185)
+        self.subject_table.setMaximumHeight(210)
 
         subject_layout.addWidget(self.subject_table)
         layout.addWidget(subject_card)
@@ -146,8 +160,8 @@ class StudyScreen(QWidget):
             ["Title", "Subject", "Created"]
         )
         self.configure_table(self.notes_table)
-        self.notes_table.setMinimumHeight(115)
-        self.notes_table.setMaximumHeight(175)
+        self.notes_table.setMinimumHeight(125)
+        self.notes_table.setMaximumHeight(220)
         self.notes_table.cellDoubleClicked.connect(self.open_note)
 
         notes_layout.addWidget(self.notes_table)
@@ -206,7 +220,6 @@ class StudyScreen(QWidget):
         self.pause_button.clicked.connect(self.pause_timer)
         self.reset_button.clicked.connect(self.reset_timer)
 
-        layout.addStretch()
 
     def configure_table(self, table):
         table.setAlternatingRowColors(True)
@@ -228,6 +241,15 @@ class StudyScreen(QWidget):
             QSizePolicy.Policy.Expanding,
             QSizePolicy.Policy.Preferred,
         )
+
+    def fit_table_height(self, table, maximum):
+        header_height = max(
+            table.horizontalHeader().sizeHint().height(), 38
+        )
+        row_height = table.verticalHeader().defaultSectionSize()
+        content_rows = max(table.rowCount(), 1)
+        table_height = min(header_height + content_rows * row_height + 14, maximum)
+        table.setFixedHeight(table_height)
 
     # Subjects
     def add_subject(self):
@@ -338,6 +360,8 @@ class StudyScreen(QWidget):
                     )
                 self.subject_table.setItem(row, column, item)
 
+        self.fit_table_height(self.subject_table, 210)
+
         current_subject = self.note_subject_input.currentText()
 
         self.note_subject_input.blockSignals(True)
@@ -446,6 +470,8 @@ class StudyScreen(QWidget):
             for column, value in enumerate(values):
                 item = QTableWidgetItem(value)
                 self.notes_table.setItem(row, column, item)
+
+        self.fit_table_height(self.notes_table, 220)
 
     def open_note(self, row, column):
         title_item = self.notes_table.item(row, 0)

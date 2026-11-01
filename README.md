@@ -2,9 +2,11 @@
 
 CampusMate is a desktop organizer for students, with a dashboard, class schedule, task list, attendance tracker, study notes, a Pomodoro timer, and an optional AI Tutor.
 
+![CampusMate dashboard preview](assets/campusmate-dashboard-preview.png)
+
 ## Download
 
-Get the latest macOS app from the [CampusMate Releases page](https://github.com/meaditya1012-sketch/CampusMate-Desktop/releases/latest). The current build is for Apple silicon. It is not Developer ID signed or notarized, so macOS may ask you to Control-click the app and choose **Open** the first time.
+Download the latest macOS app from the [public CampusMate-Desktop release](https://github.com/meaditya1012-sketch/CampusMate-Desktop/releases/latest). The current build is for Apple silicon. The app is not Developer ID signed or notarized, so macOS may ask you to Control-click it and choose **Open** the first time.
 
 ## Run from source
 
@@ -42,4 +44,4 @@ The build creates `dist/CampusMate.app` and a matching `dist/CampusMate-macOS-<a
 
 This build is not signed with an Apple Developer ID or notarized. macOS may warn users the first time they open it; they can Control-click the app and choose **Open**. Apple Developer signing and notarization are needed for a smoother first launch.
 
-For a first-run walkthrough, unzip the download, drag `CampusMate.app` to Applications, then open it. If macOS blocks the app, Control-click it and choose **Open**.
+For a first-run walkthrough, unzip the download, drag `CampusMate.app` to Applications, then open it. If macOS blocks the app because it is not Developer ID signed, Control-click it and choose **Open**.
