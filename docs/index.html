@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#17243b" />
+    <meta name="description" content="A calm, personal space to plan classes, tasks, attendance, and study time." />
+    <title>CampusMate · Student planner</title>
+    <link rel="icon" href="./assets/campusmate-mark.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="./assets/apple-touch-icon.png" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="./app.js" defer></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Main navigation">
+        <a class="brand" href="#home" data-page="home" aria-label="CampusMate home">
+          <span class="brand-mark" aria-hidden="true">C</span>
+          <span class="brand-name">CampusMate</span>
+        </a>
+        <p class="sidebar-caption">YOUR STUDENT SPACE</p>
+
+        <p class="nav-heading">WORKSPACE</p>
+        <nav class="sidebar-nav">
+          <button class="nav-link" data-page="home"><span class="nav-icon">⌂</span>Home</button>
+          <button class="nav-link" data-page="schedule"><span class="nav-icon">▦</span>Schedule</button>
+          <button class="nav-link" data-page="tasks"><span class="nav-icon">✓</span>Tasks</button>
+          <button class="nav-link" data-page="study"><span class="nav-icon">▤</span>Study Center</button>
+          <button class="nav-link" data-page="attendance"><span class="nav-icon">◷</span>Attendance</button>
+          <button class="nav-link" data-page="tutor"><span class="nav-icon">✧</span>AI Tutor</button>
+        </nav>
+
+        <div class="sidebar-bottom">
+          <div class="sidebar-rule"></div>
+          <p>Made for your next big thing.</p>
+        </div>
+      </aside>
+
+      <div class="workspace">
+        <header class="topbar">
+          <div class="mobile-brand">
+            <span class="brand-mark" aria-hidden="true">C</span>
+            <span class="brand-name">CampusMate</span>
+          </div>
+          <p class="local-badge"><span aria-hidden="true">●</span> Saved on this device</p>
+        </header>
+
+        <main id="content" class="content" tabindex="-1"></main>
+
+        <footer class="privacy-note">
+          <span aria-hidden="true">⌑</span>
+          Your planner data stays in this browser on this device.
+        </footer>
+      </div>
+
+      <nav class="mobile-nav" aria-label="Main navigation">
+        <button class="nav-link" data-page="home"><span class="nav-icon">⌂</span><span>Home</span></button>
+        <button class="nav-link" data-page="schedule"><span class="nav-icon">▦</span><span>Classes</span></button>
+        <button class="nav-link" data-page="tasks"><span class="nav-icon">✓</span><span>Tasks</span></button>
+        <button class="nav-link" data-page="study"><span class="nav-icon">▤</span><span>Study</span></button>
+        <button class="nav-link" data-page="attendance"><span class="nav-icon">◷</span><span>Track</span></button>
+        <button class="nav-link" data-page="tutor"><span class="nav-icon">✧</span><span>Tutor</span></button>
+      </nav>
+    </div>
+
+    <dialog id="dialog" class="dialog">
+      <div id="dialog-content"></div>
+    </dialog>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>

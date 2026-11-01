@@ -16,6 +16,8 @@ The next iteration added the dashboard, Study Center, Pomodoro timer, revision n
 
 The product pass replaced the dark prototype styling with a calmer light interface, refined navigation, tables, cards, and page headers, and improved the Study Center scrolling layout. The dashboard now foregrounds the day’s classes and upcoming tasks. The project also gained a CampusMate app icon and a macOS build. The app creates its database tables on first launch. Packaged builds store each user's database in macOS Application Support, while source runs continue to use the project folder.
 
+The phone-friendly web preview brings the dashboard, schedule, tasks, attendance, study subjects, revision notes, and focus timer to a browser. It is a static site and saves each tester's information in that browser's local storage. It does not provide accounts, cloud sync, or the local Ollama connection used by the desktop AI Tutor.
+
 ## Features
 
 - **Dashboard:** today's classes, pending tasks, attendance summary, upcoming work, and a shortcut to the AI Tutor.
@@ -32,6 +34,7 @@ The product pass replaced the dark prototype styling with a calmer light interfa
 - SQLite for per-user local data
 - PyInstaller for the standalone macOS app bundle
 - Ollama for optional local AI responses
+- HTML, CSS, and JavaScript for the phone-friendly browser preview
 
 ## Run and build
 
@@ -43,7 +46,7 @@ The AI Tutor is optional. It requires Ollama and the `llama3.2:3b` model running
 
 ## Publishing status
 
-The app and its clean source snapshot are publicly available in [CampusMate-Desktop](https://github.com/meaditya1012-sketch/CampusMate-Desktop). The latest Apple silicon build is attached to the [GitHub Releases page](https://github.com/meaditya1012-sketch/CampusMate-Desktop/releases/latest). The original development repository remains private because its older history contains a tracked database and backup artifacts.
+The app and its clean source snapshot are publicly available in [CampusMate-Desktop](https://github.com/meaditya1012-sketch/CampusMate-Desktop). The [web preview](https://meaditya1012-sketch.github.io/CampusMate-Desktop/) is intended for phone browser testing; the latest Apple silicon build is attached to the [GitHub Releases page](https://github.com/meaditya1012-sketch/CampusMate-Desktop/releases/latest). The original development repository remains private because its older history contains a tracked database and backup artifacts.
 
 ## Next steps for a public launch
 

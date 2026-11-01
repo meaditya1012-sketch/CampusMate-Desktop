@@ -4,6 +4,10 @@ CampusMate is a desktop organizer for students, with a dashboard, class schedule
 
 ![CampusMate dashboard preview](assets/campusmate-dashboard-preview.png)
 
+## Try the phone-friendly web preview
+
+Open the [CampusMate web preview](https://meaditya1012-sketch.github.io/CampusMate-Desktop/) in Safari or Chrome. On iPhone, use **Share → Add to Home Screen** to keep it alongside your apps. The preview stores data in that browser on that device; it does not sync with the Mac app or between devices. The AI Tutor remains available in the desktop app when Ollama is running locally.
+
 ## Download
 
 Download the latest macOS app from the [public CampusMate-Desktop release](https://github.com/meaditya1012-sketch/CampusMate-Desktop/releases/latest). The current build is for Apple silicon. The app is not Developer ID signed or notarized, so macOS may ask you to Control-click it and choose **Open** the first time.
