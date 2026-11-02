@@ -1,6 +1,6 @@
-# CampusMate 0.3.2
+# CampusMate 0.3.3
 
-Added a first-launch overview to the Mac app and phone-friendly web app. It introduces the schedule, task list, attendance tracker, and Study Center before opening the planner. The overview appears once per user or browser profile.
+Added smooth page-entry transitions to the Mac and phone apps. Web transitions respect the device's reduced-motion setting and only run when switching pages. The first-launch overview and dark theme remain included.
 
 ## Install on Mac
 

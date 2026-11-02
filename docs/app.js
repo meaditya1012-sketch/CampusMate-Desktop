@@ -325,9 +325,17 @@
 
   function navigate(page) {
     if (!pages[page]) return;
+    if (page === currentPage) return;
     currentPage = page;
     render();
+    animatePageEntry();
     window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function animatePageEntry() {
+    content.classList.remove("page-enter");
+    void content.offsetWidth;
+    content.classList.add("page-enter");
   }
 
   document.addEventListener("click", (event) => {
@@ -615,6 +623,7 @@
     welcomeScreen.hidden = true;
     appShell.hidden = false;
     render();
+    animatePageEntry();
   });
 
   render();

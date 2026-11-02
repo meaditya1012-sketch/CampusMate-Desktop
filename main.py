@@ -6,7 +6,7 @@ from datetime import datetime
 from database.database import create_tables, get_connection
 
 
-from PySide6.QtCore import QSettings, Qt
+from PySide6.QtCore import QEasingCurve, QPropertyAnimation, QSettings, Qt
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import (
     QApplication,
@@ -19,6 +19,7 @@ from PySide6.QtWidgets import (
     QPushButton,
     QFrame,
     QStackedWidget,
+    QGraphicsOpacityEffect,
     QSizePolicy,
 )
 
@@ -130,6 +131,11 @@ class CampusMate(QMainWindow):
 
         # Page stack: keep all existing screens
         self.pages = QStackedWidget()
+        self.page_opacity = QGraphicsOpacityEffect(self.pages)
+        self.pages.setGraphicsEffect(self.page_opacity)
+        self.page_transition = QPropertyAnimation(self.page_opacity, b"opacity", self)
+        self.page_transition.setDuration(220)
+        self.page_transition.setEasingCurve(QEasingCurve.Type.OutCubic)
 
         self.overview_page = self.create_overview_page()
         self.home_page = self.create_home_page()
@@ -213,7 +219,13 @@ class CampusMate(QMainWindow):
 
     def navigate_to(self, page, button):
         self.sidebar.show()
-        self.pages.setCurrentWidget(page)
+        if self.pages.currentWidget() is not page:
+            self.page_transition.stop()
+            self.page_opacity.setOpacity(0.0)
+            self.pages.setCurrentWidget(page)
+            self.page_transition.setStartValue(0.0)
+            self.page_transition.setEndValue(1.0)
+            self.page_transition.start()
         self.set_active_button(button)
 
     def enter_app(self):
