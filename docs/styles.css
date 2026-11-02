@@ -1,19 +1,19 @@
 :root {
-  color-scheme: light;
-  --ink: #202b41;
-  --ink-soft: #58667d;
-  --muted: #7e8aa0;
-  --line: #e4e9f1;
-  --canvas: #f4f6fa;
-  --paper: #ffffff;
-  --navy: #17243b;
-  --navy-soft: #293a58;
-  --indigo: #5968d9;
-  --indigo-deep: #4a58c5;
-  --mint: #51b795;
-  --amber: #d99b43;
-  --rose: #cb6570;
-  --shadow: 0 12px 34px rgba(28, 42, 68, 0.07);
+  color-scheme: dark;
+  --ink: #e5eaf3;
+  --ink-soft: #b5c0d1;
+  --muted: #96a4b9;
+  --line: #293449;
+  --canvas: #0f141f;
+  --paper: #171e2c;
+  --navy: #111827;
+  --navy-soft: #202a3d;
+  --indigo: #818cf8;
+  --indigo-deep: #6c79e8;
+  --mint: #5ac69b;
+  --amber: #eab45b;
+  --rose: #ef7d88;
+  --shadow: 0 12px 34px rgba(0, 0, 0, 0.28);
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
   color: var(--ink);
   background: var(--canvas);
@@ -493,4 +493,92 @@ button.panel-link { padding: 0; border: 0; background: transparent; cursor: poin
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+}
+
+/* Dark mode palette */
+body, .workspace, .content { color: var(--ink); background: var(--canvas); }
+.topbar { border-bottom-color: var(--line); background: rgba(15, 20, 31, .78); }
+.local-badge { color: var(--ink-soft); border-color: #344158; background: #1b2433; }
+.privacy-note { color: #8997ad; }
+.privacy-note span, .panel-link, button.panel-link { color: #aeb7ff; }
+
+.button {
+  color: #dce3ef;
+  border-color: #344158;
+  background: #20293a;
+}
+.button:hover { border-color: #4a5873; background: #293449; }
+.button-primary { color: #fff; border-color: #6573e5; background: #6573e5; }
+.button-primary:hover { color: #fff; border-color: #7481f0; background: #7481f0; }
+.button-quiet { color: #aebbd0; background: transparent; }
+.button-danger { color: #ff9ba3; }
+
+.stat-card, .panel, .surface,
+.empty-state, .schedule-item, .task-item, .attendance-item,
+.subject-item, .note-item, .tutor-workspace, .dialog {
+  color: var(--ink);
+  border-color: var(--line);
+  background: var(--paper);
+}
+.stat-label, .row-meta, .schedule-day, .schedule-detail, .item-detail,
+.subject-goal, .subject-progress-label, .note-preview, .timer-caption,
+.tutor-header p, .tutor-privacy, .tutor-footnote, .dialog-subtitle,
+.install-steps p, .muted { color: var(--muted); }
+.stat-value, .panel-title, .row-title, .empty-title,
+.schedule-subject, .item-title, .attendance-percent,
+.surface-title, .tutor-header h2, .dialog-title,
+.install-steps h3 { color: var(--ink); }
+.row-trailing { color: #b5c0d1; }
+.list-row { border-bottom-color: #293449; }
+.empty-mark, .note-icon, .tutor-mark, .install-icon {
+  color: #c0c6ff;
+  border-color: #3b426c;
+  background: #252b48;
+}
+.schedule-time, .timer-face, .subject-progress-label strong { color: #aeb7ff; }
+
+.task-toggle { color: #fff; border-color: #53617a; background: #171e2c; }
+.task-item.is-complete .item-title { color: #8896ab; }
+.priority, .status-pill { color: #b5c0d1; background: #252e40; }
+.priority.high, .status-pill.risk { color: #ff9ba3; background: #38242d; }
+.priority.medium, .status-pill.watch { color: #f3c779; background: #382f22; }
+.priority.low, .status-pill.good { color: #83d6b3; background: #1d342e; }
+.filter-chip { color: #b5c0d1; border-color: #344158; background: #20293a; }
+.filter-chip[aria-pressed="true"] { color: #c2c8ff; border-color: #414a77; background: #292f50; }
+.progress-track { background: #273145; }
+
+.tutor-status { color: #a5b1c4; border-color: #344158; background: #20293a; }
+.tutor-status.is-ready { color: #83d6b3; border-color: #315c4c; background: #1d342e; }
+.tutor-setup-notice { color: #e5c98f; border-color: #5a4831; background: #30291f; }
+.tutor-setup-notice strong { color: #f3dba8; }
+.tutor-messages { border-color: #293449; background: #111927; }
+.tutor-message { border-color: #344158; background: #1b2433; }
+.tutor-message.is-user { border-color: #414a77; background: #252b48; }
+.tutor-message-label { color: #a5b1c4; }
+.tutor-message p { color: #dce3ef; }
+.prompt-suggestion { color: #c0c9d9; border-color: #344158; background: #20293a; }
+.prompt-suggestion:hover:not(:disabled) { color: #d1d5ff; border-color: #59649a; background: #292f50; }
+.tutor-compose textarea { color: var(--ink); border-color: #344158; background: #111927; }
+.tutor-compose textarea:focus { border-color: #8793ff; }
+
+.dialog { border-color: #344158; box-shadow: 0 28px 80px rgba(0,0,0,.55); }
+.dialog::backdrop { background: rgba(3, 7, 14, .7); }
+.form-field label { color: #b5c0d1; }
+.form-field input, .form-field select, .form-field textarea {
+  color: var(--ink);
+  border-color: #344158;
+  background: #111927;
+}
+.install-steps section { border-color: #344158; background: #1b2433; }
+
+@media (max-width: 700px) {
+  .topbar { border-bottom-color: #293449; background: rgba(15, 20, 31, .94); }
+  .mobile-brand .brand-name { color: var(--ink); }
+  .install-card { border-color: #344158; background: rgba(23, 30, 44, .92); }
+  .install-copy strong { color: #dce3ef; }
+  .install-copy span { color: #96a4b9; }
+  .mobile-nav { border-top-color: #293449; background: rgba(17, 24, 39, .97); box-shadow: 0 -8px 24px rgba(0,0,0,.28); }
+  .mobile-nav .nav-link { color: #9aa8bd; }
+  .mobile-nav .nav-link:hover { color: #c2c8ff; background: #20293a; }
+  .mobile-nav .nav-link[aria-current="page"] { color: #c2c8ff; background: #292f50; }
 }
