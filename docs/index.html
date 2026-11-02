@@ -13,7 +13,43 @@
     <script src="./app.js" defer></script>
   </head>
   <body>
-    <div class="app-shell">
+    <main id="welcome-screen" class="welcome-screen" aria-labelledby="welcome-title">
+      <section class="welcome-card">
+        <div class="welcome-brand">
+          <span class="brand-mark" aria-hidden="true">C</span>
+          <span class="brand-name">CampusMate</span>
+        </div>
+        <p class="welcome-eyebrow">YOUR STUDENT SPACE</p>
+        <h1 id="welcome-title">A clearer way to plan your campus week.</h1>
+        <p class="welcome-intro">Keep classes, coursework, attendance and study time together in one calm space.</p>
+
+        <div class="welcome-features" aria-label="What you can do with CampusMate">
+          <article class="welcome-feature">
+            <span class="welcome-feature-icon" aria-hidden="true">▦</span>
+            <div><h2>See your schedule</h2><p>Keep class days, times and details in view.</p></div>
+          </article>
+          <article class="welcome-feature">
+            <span class="welcome-feature-icon" aria-hidden="true">✓</span>
+            <div><h2>Stay on top of tasks</h2><p>Track assignments, due dates and priorities.</p></div>
+          </article>
+          <article class="welcome-feature">
+            <span class="welcome-feature-icon" aria-hidden="true">◷</span>
+            <div><h2>Know your attendance</h2><p>Record classes and follow your progress.</p></div>
+          </article>
+          <article class="welcome-feature">
+            <span class="welcome-feature-icon" aria-hidden="true">▤</span>
+            <div><h2>Make time to study</h2><p>Set goals, save notes and focus with a timer.</p></div>
+          </article>
+        </div>
+
+        <footer class="welcome-footer">
+          <p>Your planner data stays in this browser on this device.</p>
+          <button id="enter-app" class="button button-primary" type="button">Enter CampusMate <span aria-hidden="true">→</span></button>
+        </footer>
+      </section>
+    </main>
+
+    <div id="app-shell" class="app-shell" hidden>
       <aside class="sidebar" aria-label="Main navigation">
         <a class="brand" href="#home" data-page="home" aria-label="CampusMate home">
           <span class="brand-mark" aria-hidden="true">C</span>

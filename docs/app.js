@@ -2,11 +2,14 @@
   "use strict";
 
   const STORAGE_KEY = "campusmate.web.v1";
+  const OVERVIEW_KEY = "campusmate.web.overview-seen.v1";
   const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
   const content = document.getElementById("content");
   const dialog = document.getElementById("dialog");
   const dialogContent = document.getElementById("dialog-content");
   const toastElement = document.getElementById("toast");
+  const welcomeScreen = document.getElementById("welcome-screen");
+  const appShell = document.getElementById("app-shell");
   const pages = {
     home: ["Home", "A clear view of your day."],
     schedule: ["Schedule", "Keep your week in view."],
@@ -592,6 +595,26 @@
   window.addEventListener("beforeinstallprompt", (event) => {
     event.preventDefault();
     installPromptEvent = event;
+  });
+
+  try {
+    if (localStorage.getItem(OVERVIEW_KEY) === "seen") {
+      welcomeScreen.hidden = true;
+      appShell.hidden = false;
+    }
+  } catch {
+    // Keep the overview visible if browser storage is unavailable.
+  }
+
+  document.getElementById("enter-app").addEventListener("click", () => {
+    try {
+      localStorage.setItem(OVERVIEW_KEY, "seen");
+    } catch {
+      // The app still opens when browser storage is unavailable.
+    }
+    welcomeScreen.hidden = true;
+    appShell.hidden = false;
+    render();
   });
 
   render();

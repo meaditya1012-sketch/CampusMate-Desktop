@@ -6,13 +6,14 @@ from datetime import datetime
 from database.database import create_tables, get_connection
 
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QSettings, Qt
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import (
     QApplication,
     QMainWindow,
     QWidget,
     QHBoxLayout,
+    QGridLayout,
     QVBoxLayout,
     QLabel,
     QPushButton,
@@ -37,6 +38,7 @@ class CampusMate(QMainWindow):
         self.resize(1200, 760)
 
         self.nav_buttons = []
+        self.settings = QSettings("CampusMate", "CampusMate")
 
         self.setup_ui()
 
@@ -50,11 +52,11 @@ class CampusMate(QMainWindow):
         main_layout.setSpacing(0)
 
         # Sidebar
-        sidebar = QFrame()
-        sidebar.setObjectName("sidebar")
-        sidebar.setFixedWidth(238)
+        self.sidebar = QFrame()
+        self.sidebar.setObjectName("sidebar")
+        self.sidebar.setFixedWidth(238)
 
-        sidebar_layout = QVBoxLayout(sidebar)
+        sidebar_layout = QVBoxLayout(self.sidebar)
         sidebar_layout.setContentsMargins(19, 28, 19, 22)
         sidebar_layout.setSpacing(9)
 
@@ -129,6 +131,7 @@ class CampusMate(QMainWindow):
         # Page stack: keep all existing screens
         self.pages = QStackedWidget()
 
+        self.overview_page = self.create_overview_page()
         self.home_page = self.create_home_page()
         self.schedule_page = ScheduleScreen()
         self.tasks_page = TasksScreen()
@@ -136,6 +139,7 @@ class CampusMate(QMainWindow):
         self.attendance_page = AttendanceScreen()
         self.ai_tutor_page = AITutorScreen()
 
+        self.pages.addWidget(self.overview_page)
         self.pages.addWidget(self.home_page)
         self.pages.addWidget(self.schedule_page)
         self.pages.addWidget(self.tasks_page)
@@ -168,13 +172,21 @@ class CampusMate(QMainWindow):
         )
         self.ai_button.clicked.connect(self.show_ai_tutor)
         self.ask_tutor_button.clicked.connect(self.show_ai_tutor)
+        self.enter_app_button.clicked.connect(self.enter_app)
 
-        main_layout.addWidget(sidebar)
+        main_layout.addWidget(self.sidebar)
         main_layout.addWidget(self.pages, 1)
 
         self.apply_styles()
 
-        self.set_active_button(self.home_button)
+        has_entered_app = self.settings.value("overview/completed", False, bool)
+        if has_entered_app:
+            self.pages.setCurrentWidget(self.home_page)
+            self.set_active_button(self.home_button)
+        else:
+            self.pages.setCurrentWidget(self.overview_page)
+            self.sidebar.hide()
+            self.set_active_button(None)
 
     def create_nav_button(self, symbol, label):
         button = QPushButton(f"{symbol}     {label}")
@@ -200,11 +212,112 @@ class CampusMate(QMainWindow):
             button.update()
 
     def navigate_to(self, page, button):
+        self.sidebar.show()
         self.pages.setCurrentWidget(page)
         self.set_active_button(button)
 
+    def enter_app(self):
+        self.settings.setValue("overview/completed", True)
+        self.show_home()
+
     def apply_styles(self):
         self.setStyleSheet(CAMPUSMATE_THEME)
+
+    def create_overview_page(self):
+        page = QFrame()
+        page.setObjectName("overviewScreen")
+
+        page_layout = QVBoxLayout(page)
+        page_layout.setContentsMargins(38, 30, 38, 30)
+        page_layout.addStretch()
+
+        panel = QFrame()
+        panel.setObjectName("overviewPanel")
+        panel_layout = QVBoxLayout(panel)
+        panel_layout.setContentsMargins(34, 28, 34, 28)
+        panel_layout.setSpacing(12)
+
+        brand_row = QHBoxLayout()
+        brand_row.setSpacing(10)
+        mark = QLabel("C")
+        mark.setObjectName("logoMark")
+        mark.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        mark.setFixedSize(34, 34)
+        brand = QLabel("CampusMate")
+        brand.setObjectName("overviewBrand")
+        brand_row.addWidget(mark)
+        brand_row.addWidget(brand)
+        brand_row.addStretch()
+        panel_layout.addLayout(brand_row)
+
+        eyebrow = QLabel("YOUR STUDENT SPACE")
+        eyebrow.setObjectName("overviewEyebrow")
+        panel_layout.addWidget(eyebrow)
+
+        title = QLabel("A clearer way to plan your campus week.")
+        title.setObjectName("overviewTitle")
+        title.setWordWrap(True)
+        panel_layout.addWidget(title)
+
+        description = QLabel(
+            "Keep classes, coursework, attendance and study time together "
+            "in one calm space."
+        )
+        description.setObjectName("overviewDescription")
+        description.setWordWrap(True)
+        panel_layout.addWidget(description)
+
+        features = QGridLayout()
+        features.setSpacing(10)
+        feature_data = [
+            ("▦", "See your schedule", "Keep class days, times and details in view."),
+            ("✓", "Stay on top of tasks", "Track assignments, due dates and priorities."),
+            ("◷", "Know your attendance", "Record classes and follow your progress."),
+            ("▤", "Make time to study", "Set goals, save notes and focus with a timer."),
+        ]
+        for index, (symbol, feature_title, copy) in enumerate(feature_data):
+            feature = QFrame()
+            feature.setObjectName("overviewFeature")
+            feature_layout = QHBoxLayout(feature)
+            feature_layout.setContentsMargins(14, 13, 14, 13)
+            feature_layout.setSpacing(11)
+
+            icon = QLabel(symbol)
+            icon.setObjectName("overviewFeatureIcon")
+            icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            icon.setFixedSize(34, 34)
+            feature_layout.addWidget(icon, 0, Qt.AlignmentFlag.AlignTop)
+
+            feature_copy = QVBoxLayout()
+            feature_copy.setSpacing(4)
+            feature_heading = QLabel(feature_title)
+            feature_heading.setObjectName("overviewFeatureTitle")
+            feature_text = QLabel(copy)
+            feature_text.setObjectName("overviewFeatureDescription")
+            feature_text.setWordWrap(True)
+            feature_copy.addWidget(feature_heading)
+            feature_copy.addWidget(feature_text)
+            feature_layout.addLayout(feature_copy, 1)
+
+            features.addWidget(feature, index // 2, index % 2)
+        panel_layout.addLayout(features)
+
+        footer = QHBoxLayout()
+        privacy = QLabel("Your planner stays on this device.")
+        privacy.setObjectName("overviewPrivacy")
+        privacy.setWordWrap(True)
+        footer.addWidget(privacy, 1)
+
+        self.enter_app_button = QPushButton("Enter CampusMate  →")
+        self.enter_app_button.setObjectName("primaryButton")
+        self.enter_app_button.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.enter_app_button.setMinimumHeight(44)
+        footer.addWidget(self.enter_app_button)
+        panel_layout.addLayout(footer)
+
+        page_layout.addWidget(panel)
+        page_layout.addStretch()
+        return page
 
     # Dashboard data
     def get_dashboard_data(self):
